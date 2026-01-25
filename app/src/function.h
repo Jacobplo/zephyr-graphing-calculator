@@ -5,9 +5,10 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#define TOKEN_MAX_LENGTH 16
 
 // Should end with a NULL.
-#define FUNCTION_TOKEN_BUFFER(name, size) static char *(name)[size]
+#define FUNCTION_TOKEN_BUFFER(name, size) static char (name)[size][TOKEN_MAX_LENGTH]
 
 #define __LEFT 'L'
 #define __RIGHT 'R'
@@ -59,7 +60,7 @@ typedef struct Token {
 } Token;
 
 
-int8_t function_infix_to_postfix(char **infix, char **postfix, struct k_heap *heap, int32_t buffer_size);
+int8_t function_infix_to_postfix(char (*infix)[TOKEN_MAX_LENGTH], char (*postfix)[TOKEN_MAX_LENGTH], size_t token_buffer_size);
 TokenType __function_get_token_type(const char *token);
 double __function_get_constant(const char *token);
 int8_t __function_get_operator_attribute(const char *token, OperatorAttribute attribute);

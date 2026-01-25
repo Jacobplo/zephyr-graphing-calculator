@@ -45,14 +45,14 @@ static const Token possible_tokens[] = {
 
 
 
-int8_t function_infix_to_postfix(char **infix, char **postfix, struct k_heap *heap, int32_t buffer_size) {
-  char *operator_stack_data[buffer_size]; 
-  STACK_INIT(operator_stack, operator_stack_data, buffer_size);
+int8_t function_infix_to_postfix(char (*infix)[TOKEN_MAX_LENGTH], char (*postfix)[TOKEN_MAX_LENGTH], size_t token_buffer_size) {
+  STACK_INIT(operator_stack);
 
-  char *operator_stack_element_buffer;
+  char operator_stack_element_buffer[TOKEN_MAX_LENGTH];
 
+  size_t i;
   // Loops through all tokens in infix form, converting it to postfix form
-  while(*infix) {
+  while((*infix)[0] != '\0' && i < token_buffer_size - 1) {
     printk("1");
     char *token = *infix;
     TokenType token_type = __function_get_token_type(token);
@@ -62,87 +62,86 @@ int8_t function_infix_to_postfix(char **infix, char **postfix, struct k_heap *he
 
     // Case for if token is a double literal.
     if(token_type == TOKEN_LITERAL) {
-      *postfix = k_heap_alloc(heap, 16, K_FOREVER);
       strcpy(*postfix, token);
       postfix++;
     }
 
     // Case for if token is a function.
     else if(token_type == TOKEN_FUNCTION) {
-      stack_push(&operator_stack, token, heap); 
+      stack_push(&operator_stack, token); 
     }
 
     // Case for if token is an operator.
     else if(token_type == TOKEN_OPERATOR) {
       printk("start_op -> ");
-      while(stack_peek(&operator_stack, &operator_stack_element_buffer, heap) != NULL &&
+      while(stack_peek(&operator_stack, operator_stack_element_buffer) != NULL &&
             IS_OPERATOR(operator_stack_element_buffer) && 
             !IS_LEFT_PARENTHESIS(operator_stack_element_buffer) &&
             (GET_PRECEDENCE(operator_stack_element_buffer) > GET_PRECEDENCE(token) ||
              (GET_PRECEDENCE(operator_stack_element_buffer) == GET_PRECEDENCE(token) &&
               GET_ASSOCIATIVITY(token) == __LEFT))) 
       {
-        stack_pop(&operator_stack, postfix, heap);
+        stack_pop(&operator_stack, *postfix);
         postfix++;
       }
-      stack_push(&operator_stack, token, heap);
+      stack_push(&operator_stack, token);
       printk("end_op\n");
     }
 
     // Case for if token is a left parenthesis.
     else if(token_type == TOKEN_PARENTHESIS && !strcmp(token, "(")) {
-      stack_push(&operator_stack, token, heap);
+      stack_push(&operator_stack, token);
     }
 
     // Case for if token is a right parenthesis.
     else if(token_type == TOKEN_PARENTHESIS && !strcmp(token, ")")) {
-      while(stack_peek(&operator_stack, &operator_stack_element_buffer, heap) != NULL &&
+      while(stack_peek(&operator_stack, operator_stack_element_buffer) != NULL &&
             strcmp(operator_stack_element_buffer, "("))
       {
         // Mismatched parentheses
-        if(stack_peek(&operator_stack, &operator_stack_element_buffer, heap) == NULL) {
+        if(stack_peek(&operator_stack, operator_stack_element_buffer) == NULL) {
           return 0;
         }
-        stack_pop(&operator_stack, postfix, heap);
+        stack_pop(&operator_stack, *postfix);
         postfix++;
       }
       // Mismatched parentheses
-      if(stack_peek(&operator_stack, &operator_stack_element_buffer, heap) != NULL &&
+      if(stack_peek(&operator_stack, operator_stack_element_buffer) != NULL &&
          strcmp(operator_stack_element_buffer, "("))
       {
           return 0;
       } 
-      stack_pop(&operator_stack, &operator_stack_element_buffer, heap); // Discard left parentheses.
-      if(stack_peek(&operator_stack, &operator_stack_element_buffer, heap) != NULL &&
+      stack_pop(&operator_stack, operator_stack_element_buffer); // Discard left parentheses.
+      if(stack_peek(&operator_stack, operator_stack_element_buffer) != NULL &&
          IS_FUNCTION(operator_stack_element_buffer))
       {
-        stack_pop(&operator_stack, postfix, heap);
+        stack_pop(&operator_stack, *postfix);
         postfix++;
       }
     }
 
     infix++;
+    i++;
   } 
 
   printk("test_before -> ");
   // Pop the remaining items from the operator stack to the postfix queue.
-  while(stack_peek(&operator_stack, &operator_stack_element_buffer, heap) != NULL) {
+  while(stack_peek(&operator_stack, operator_stack_element_buffer) != NULL) {
     printk("test_start -> ");
     // Mismatched parentheses.
     if(!strcmp(operator_stack_element_buffer, "(")) {
       return 0;
     }
     
-    stack_pop(&operator_stack, postfix, heap);
+    stack_pop(&operator_stack, *postfix);
     printk("%s\n", *postfix);
 
     postfix++;
   }
   printk("test_end\n");
-
-
-  *postfix = NULL;
-
+  
+  (*postfix)[0] = '\0';
+  
   return 1;
 }
 
