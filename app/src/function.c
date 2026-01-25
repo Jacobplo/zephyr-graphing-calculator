@@ -1,7 +1,6 @@
 #include "function.h"
 
 #include <zephyr/kernel.h>
-#include <zephyr/sys/printk.h>
 
 #include <stdbool.h>
 #include <stdlib.h>
@@ -50,15 +49,13 @@ int8_t function_infix_to_postfix(char (*infix)[TOKEN_MAX_LENGTH], char (*postfix
   size_t i = 0;
   // Loops through all tokens in infix form, converting it to postfix form
   while((*infix)[0] != '\0' && i < token_buffer_size - 1) {
-    printk("1");
     char *token = *infix;
     TokenType token_type = __function_get_token_type(token);
-    printk("a -> %d\n", token_type);
 
     if(token_type == TOKEN_NONE) return 0;  // Fails if token is not a valid type.
 
-    // Case for if token is a double literal.
-    if(token_type == TOKEN_LITERAL) {
+    // Case for if token is a double literal or constant.
+    if(token_type == TOKEN_LITERAL || token_type == TOKEN_CONSTANT) {
       strcpy(*postfix, token);
       postfix++;
     }
@@ -70,7 +67,6 @@ int8_t function_infix_to_postfix(char (*infix)[TOKEN_MAX_LENGTH], char (*postfix
 
     // Case for if token is an operator.
     else if(token_type == TOKEN_OPERATOR) {
-      printk("start_op -> ");
       while(stack_peek(&operator_stack, operator_stack_element_buffer) != NULL &&
             IS_OPERATOR(operator_stack_element_buffer) && 
             !IS_LEFT_PARENTHESIS(operator_stack_element_buffer) &&
@@ -82,7 +78,6 @@ int8_t function_infix_to_postfix(char (*infix)[TOKEN_MAX_LENGTH], char (*postfix
         postfix++;
       }
       stack_push(&operator_stack, token);
-      printk("end_op\n");
     }
 
     // Case for if token is a left parenthesis.
@@ -121,22 +116,19 @@ int8_t function_infix_to_postfix(char (*infix)[TOKEN_MAX_LENGTH], char (*postfix
     i++;
   } 
 
-  printk("test_before -> ");
   // Pop the remaining items from the operator stack to the postfix queue.
   while(stack_peek(&operator_stack, operator_stack_element_buffer) != NULL) {
-    printk("test_start -> ");
     // Mismatched parentheses.
     if(!strcmp(operator_stack_element_buffer, "(")) {
       return 0;
     }
     
     stack_pop(&operator_stack, *postfix);
-    printk("%s\n", *postfix);
 
     postfix++;
   }
-  printk("test_end\n");
-  
+ 
+  // Ensures the final token of each postfix expression is known.
   (*postfix)[0] = '\0';
   
   return 1;
@@ -206,6 +198,9 @@ int8_t __function_get_operator_attribute(const char *token, OperatorAttribute at
   return 0;
 }
 
+/*
+* Operator Stack Components
+*/
 char *stack_peek(OperatorStack *stack, char *dest) {
   if(stack->top == -1) return NULL;
 
