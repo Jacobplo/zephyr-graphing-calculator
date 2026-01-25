@@ -4,7 +4,6 @@ project(graphing-calculator)
 
 target_sources(app PRIVATE src/main.c)
 target_sources(app PRIVATE src/function.c)
-target_sources(app PRIVATE src/stack.c)
 target_sources(app PRIVATE ../drivers/LED/led.c)
 target_sources(app PRIVATE ../drivers/BTN/btn.c)
 

@@ -1,14 +1,11 @@
+#include "function.h"
+
+#include <zephyr/kernel.h>
 #include <zephyr/sys/printk.h>
 
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
-
-#include <math.h>
-
-#include "function.h"
-#include "stack.h"
-#include "zephyr/kernel.h"
 
 
 #define IS_OPERATOR(str) (__function_get_token_type(str) == TOKEN_OPERATOR)
@@ -46,11 +43,11 @@ static const Token possible_tokens[] = {
 
 
 int8_t function_infix_to_postfix(char (*infix)[TOKEN_MAX_LENGTH], char (*postfix)[TOKEN_MAX_LENGTH], size_t token_buffer_size) {
-  STACK_INIT(operator_stack);
+  OPERATOR_STACK_INIT(operator_stack);
 
   char operator_stack_element_buffer[TOKEN_MAX_LENGTH];
 
-  size_t i;
+  size_t i = 0;
   // Loops through all tokens in infix form, converting it to postfix form
   while((*infix)[0] != '\0' && i < token_buffer_size - 1) {
     printk("1");
@@ -209,3 +206,27 @@ int8_t __function_get_operator_attribute(const char *token, OperatorAttribute at
   return 0;
 }
 
+char *stack_peek(OperatorStack *stack, char *dest) {
+  if(stack->top == -1) return NULL;
+
+  return strcpy(dest, stack->data[stack->top]);
+}
+
+char *stack_pop(OperatorStack *stack, char *dest) {
+  if(stack->top == -1) return NULL;
+
+  char *ret = strcpy(dest, stack->data[stack->top]);
+  stack->top--;
+
+  return ret;
+}
+
+int8_t stack_push(OperatorStack *stack, char *str) {
+  if(stack->top == OPERATOR_STACK_CAPACITY - 1) return 0;
+
+  stack->top++;
+
+  strcpy(stack->data[stack->top], str);
+
+  return 1;
+}

@@ -1,9 +1,9 @@
 #ifndef FUNCTION_H_
 #define FUNCTION_H_
 
-#include "zephyr/kernel.h"
 #include <stdbool.h>
 #include <stdint.h>
+#include <stddef.h>
 
 #define TOKEN_MAX_LENGTH 16
 
@@ -64,5 +64,24 @@ int8_t function_infix_to_postfix(char (*infix)[TOKEN_MAX_LENGTH], char (*postfix
 TokenType __function_get_token_type(const char *token);
 double __function_get_constant(const char *token);
 int8_t __function_get_operator_attribute(const char *token, OperatorAttribute attribute);
+
+
+
+/*
+* Operator Stack Components
+*/
+#define OPERATOR_STACK_CAPACITY 1024
+
+typedef struct OperatorStack {
+  char data[OPERATOR_STACK_CAPACITY][TOKEN_MAX_LENGTH];
+  int32_t top;
+} OperatorStack;
+
+#define OPERATOR_STACK_INIT(_name) static OperatorStack _name = { .top=-1 }
+
+char *stack_peek(OperatorStack *stack, char *dest);
+char *stack_pop(OperatorStack *stack, char* dest);
+int8_t stack_push(OperatorStack *stack, char *str);
+
 
 #endif
