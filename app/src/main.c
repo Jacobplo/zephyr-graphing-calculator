@@ -50,6 +50,7 @@ int main(void) {
   for(int i = 0; i < MAX_FUNCTION_TOKENS && postfix[i][0] != '\0'; i++) {
     printk("%s ", postfix[i]);  
   }
+  printk("\n");
 
   while(1) {
     k_msleep(SLEEP_MS);
