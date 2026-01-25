@@ -37,7 +37,7 @@ int main(void) {
   strcpy(infix[6], "(");
   strcpy(infix[7], "1");
   strcpy(infix[8], "-");
-  strcpy(infix[9], "5");
+  strcpy(infix[9], "x");
   strcpy(infix[10], ")");
   strcpy(infix[11], "^");
   strcpy(infix[12], "2");

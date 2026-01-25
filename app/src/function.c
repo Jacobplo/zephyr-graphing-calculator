@@ -55,7 +55,7 @@ int8_t function_infix_to_postfix(char (*infix)[TOKEN_MAX_LENGTH], char (*postfix
     if(token_type == TOKEN_NONE) return 0;  // Fails if token is not a valid type.
 
     // Case for if token is a double literal or constant.
-    if(token_type == TOKEN_LITERAL || token_type == TOKEN_CONSTANT) {
+    if(token_type == TOKEN_LITERAL || token_type == TOKEN_CONSTANT || token_type == TOKEN_X) {
       strcpy(*postfix, token);
       postfix++;
     }
