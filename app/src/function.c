@@ -1,4 +1,5 @@
-#include <ctype.h>
+#include <zephyr/sys/printk.h>
+
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
@@ -6,7 +7,15 @@
 #include <math.h>
 
 #include "function.h"
+#include "stack.h"
+#include "zephyr/kernel.h"
 
+
+#define IS_OPERATOR(str) (__function_get_token_type(str) == TOKEN_OPERATOR)
+#define IS_FUNCTION(str) (__function_get_token_type(str) == TOKEN_FUNCTION)
+#define IS_LEFT_PARENTHESIS(str) (!strcmp((str), "("))
+#define GET_PRECEDENCE(str) (__function_get_operator_attribute((str), OPERATOR_PRECEDENCE))
+#define GET_ASSOCIATIVITY(str) (__function_get_operator_attribute((str), OPERATOR_ASSOCIATIVITY))
 
 static const Token possible_tokens[] = {
   // Operators
@@ -36,29 +45,103 @@ static const Token possible_tokens[] = {
 
 
 
-int8_t function_infix_to_postfix(char **infix, char **postfix, int32_t buffer_size) {
-  char operator_stack_data[buffer_size]; 
+int8_t function_infix_to_postfix(char **infix, char **postfix, struct k_heap *heap, int32_t buffer_size) {
+  char *operator_stack_data[buffer_size]; 
+  STACK_INIT(operator_stack, operator_stack_data, buffer_size);
+
+  char *operator_stack_element_buffer;
 
   // Loops through all tokens in infix form, converting it to postfix form
   while(*infix) {
+    printk("1");
     char *token = *infix;
     TokenType token_type = __function_get_token_type(token);
-    if(token_type == TOKEN_NONE) return 0;  // Fails if token is not a valid type.
+    printk("a -> %d\n", token_type);
 
-    bool token_pushed_to_queue = false;
+    if(token_type == TOKEN_NONE) return 0;  // Fails if token is not a valid type.
 
     // Case for if token is a double literal.
     if(token_type == TOKEN_LITERAL) {
-      *postfix = token;
-      token_pushed_to_queue = true;
+      *postfix = k_heap_alloc(heap, 16, K_FOREVER);
+      strcpy(*postfix, token);
+      postfix++;
     }
 
+    // Case for if token is a function.
     else if(token_type == TOKEN_FUNCTION) {
-      
+      stack_push(&operator_stack, token, heap); 
+    }
+
+    // Case for if token is an operator.
+    else if(token_type == TOKEN_OPERATOR) {
+      printk("start_op -> ");
+      while(stack_peek(&operator_stack, &operator_stack_element_buffer, heap) != NULL &&
+            IS_OPERATOR(operator_stack_element_buffer) && 
+            !IS_LEFT_PARENTHESIS(operator_stack_element_buffer) &&
+            (GET_PRECEDENCE(operator_stack_element_buffer) > GET_PRECEDENCE(token) ||
+             (GET_PRECEDENCE(operator_stack_element_buffer) == GET_PRECEDENCE(token) &&
+              GET_ASSOCIATIVITY(token) == __LEFT))) 
+      {
+        stack_pop(&operator_stack, postfix, heap);
+        postfix++;
+      }
+      stack_push(&operator_stack, token, heap);
+      printk("end_op\n");
+    }
+
+    // Case for if token is a left parenthesis.
+    else if(token_type == TOKEN_PARENTHESIS && !strcmp(token, "(")) {
+      stack_push(&operator_stack, token, heap);
+    }
+
+    // Case for if token is a right parenthesis.
+    else if(token_type == TOKEN_PARENTHESIS && !strcmp(token, ")")) {
+      while(stack_peek(&operator_stack, &operator_stack_element_buffer, heap) != NULL &&
+            strcmp(operator_stack_element_buffer, "("))
+      {
+        // Mismatched parentheses
+        if(stack_peek(&operator_stack, &operator_stack_element_buffer, heap) == NULL) {
+          return 0;
+        }
+        stack_pop(&operator_stack, postfix, heap);
+        postfix++;
+      }
+      // Mismatched parentheses
+      if(stack_peek(&operator_stack, &operator_stack_element_buffer, heap) != NULL &&
+         strcmp(operator_stack_element_buffer, "("))
+      {
+          return 0;
+      } 
+      stack_pop(&operator_stack, &operator_stack_element_buffer, heap); // Discard left parentheses.
+      if(stack_peek(&operator_stack, &operator_stack_element_buffer, heap) != NULL &&
+         IS_FUNCTION(operator_stack_element_buffer))
+      {
+        stack_pop(&operator_stack, postfix, heap);
+        postfix++;
+      }
     }
 
     infix++;
   } 
+
+  printk("test_before -> ");
+  // Pop the remaining items from the operator stack to the postfix queue.
+  while(stack_peek(&operator_stack, &operator_stack_element_buffer, heap) != NULL) {
+    printk("test_start -> ");
+    // Mismatched parentheses.
+    if(!strcmp(operator_stack_element_buffer, "(")) {
+      return 0;
+    }
+    
+    stack_pop(&operator_stack, postfix, heap);
+    printk("%s\n", *postfix);
+
+    postfix++;
+  }
+  printk("test_end\n");
+
+
+  *postfix = NULL;
 
   return 1;
 }
@@ -66,7 +149,7 @@ int8_t function_infix_to_postfix(char **infix, char **postfix, int32_t buffer_si
 TokenType __function_get_token_type(const char *token) { 
   // Compare token with the defined token types
   const Token *possible_token = possible_tokens;
-  while(possible_tokens->token_type != TOKEN_NONE) { 
+  while(possible_token->token_type != TOKEN_NONE) { 
     if(possible_token->token_type == TOKEN_OPERATOR && !strcmp(possible_token->operator.symbol, token)) {
       return TOKEN_OPERATOR;
     }
@@ -83,7 +166,7 @@ TokenType __function_get_token_type(const char *token) {
   // Check if token is a double literal.
   char *endptr;
   strtod(token, &endptr);
-  if(endptr != NULL) return TOKEN_LITERAL;
+  if(endptr != token) return TOKEN_LITERAL;
 
   // Check if TOKEN is a symbol of none of the above types.
   if(strlen(token) == 1) {

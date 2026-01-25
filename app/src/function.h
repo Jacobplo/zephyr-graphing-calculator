@@ -1,6 +1,7 @@
 #ifndef FUNCTION_H_
 #define FUNCTION_H_
 
+#include "zephyr/kernel.h"
 #include <stdbool.h>
 #include <stdint.h>
 
@@ -58,7 +59,7 @@ typedef struct Token {
 } Token;
 
 
-int8_t function_infix_to_postfix(char **infix, char **postfix, int32_t buffer_size);
+int8_t function_infix_to_postfix(char **infix, char **postfix, struct k_heap *heap, int32_t buffer_size);
 TokenType __function_get_token_type(const char *token);
 double __function_get_constant(const char *token);
 int8_t __function_get_operator_attribute(const char *token, OperatorAttribute attribute);
