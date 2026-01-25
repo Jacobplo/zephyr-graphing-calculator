@@ -1,7 +1,8 @@
-#include "zephyr/sys/printk.h"
-
+#include <ctype.h>
 #include <stdbool.h>
+#include <stdlib.h>
 #include <string.h>
+
 #include <math.h>
 
 #include "function.h"
@@ -26,8 +27,8 @@ static const Token possible_tokens[] = {
   { .token_type=TOKEN_FUNCTION, .function="ceil" },
 
   // Constants
-  { .token_type=TOKEN_CONSTANT, .constant="pi" },
-  { .token_type=TOKEN_CONSTANT, .constant="e" },
+  { .token_type=TOKEN_CONSTANT, .constant={ "pi",  _M_PI } },
+  { .token_type=TOKEN_CONSTANT, .constant={ "e",  _M_E } },
 
   // Used to indicate searching for token should stop.
   { .token_type=TOKEN_NONE },
@@ -35,25 +36,94 @@ static const Token possible_tokens[] = {
 
 
 
-void function_infix_to_postfix(char **infix, char **postfix) {
-  return;
+int8_t function_infix_to_postfix(char **infix, char **postfix, int32_t buffer_size) {
+  char operator_stack_data[buffer_size]; 
+
+  // Loops through all tokens in infix form, converting it to postfix form
+  while(*infix) {
+    char *token = *infix;
+    TokenType token_type = __function_get_token_type(token);
+    if(token_type == TOKEN_NONE) return 0;  // Fails if token is not a valid type.
+
+    bool token_pushed_to_queue = false;
+
+    // Case for if token is a double literal.
+    if(token_type == TOKEN_LITERAL) {
+      *postfix = token;
+      token_pushed_to_queue = true;
+    }
+
+    else if(token_type == TOKEN_FUNCTION) {
+      
+    }
+
+    infix++;
+  } 
+
+  return 1;
 }
 
-bool __function_is_valid_token(const char *token) {
+TokenType __function_get_token_type(const char *token) { 
+  // Compare token with the defined token types
   const Token *possible_token = possible_tokens;
-  while(possible_tokens->token_type != TOKEN_NONE) {
+  while(possible_tokens->token_type != TOKEN_NONE) { 
     if(possible_token->token_type == TOKEN_OPERATOR && !strcmp(possible_token->operator.symbol, token)) {
-      return true;
+      return TOKEN_OPERATOR;
     }
     else if(possible_token->token_type == TOKEN_FUNCTION && !strcmp(possible_token->function, token)) {
-      return true;
+      return TOKEN_FUNCTION;
     }
-    else if(possible_token->token_type == TOKEN_CONSTANT && !strcmp(possible_token->constant, token)) {
-      return true;
+    else if(possible_token->token_type == TOKEN_CONSTANT && !strcmp(possible_token->constant.symbol, token)) {
+      return TOKEN_CONSTANT;
     }
 
     possible_token++;
   } 
 
-  return false;
+  // Check if token is a double literal.
+  char *endptr;
+  strtod(token, &endptr);
+  if(endptr != NULL) return TOKEN_LITERAL;
+
+  // Check if TOKEN is a symbol of none of the above types.
+  if(strlen(token) == 1) {
+    char token_chr = token[0];
+    if(token_chr == 'x') return TOKEN_X;
+    else if(token_chr == '(' || token_chr == ')') return TOKEN_PARENTHESIS;
+  }
+
+
+  return TOKEN_NONE;
 }
+
+double __function_get_constant(const char *token) {
+  const Token *possible_token = possible_tokens;
+  while(possible_tokens->token_type != TOKEN_NONE) {
+    if(possible_token->token_type == TOKEN_CONSTANT && !strcmp(possible_token->constant.symbol, token)) {
+      return possible_token->constant.value;
+    }
+
+    possible_token++;
+  }
+
+  return 0.0;
+}
+
+int8_t __function_get_operator_attribute(const char *token, OperatorAttribute attribute) {
+  const Token *possible_token = possible_tokens;
+  while(possible_tokens->token_type != TOKEN_NONE) {
+    if(possible_token->token_type == TOKEN_OPERATOR && !strcmp(possible_token->operator.symbol, token)) {
+      if(attribute == OPERATOR_PRECEDENCE) {
+        return possible_token->operator.precedence;
+      }
+      else if(attribute == OPERATOR_ASSOCIATIVITY) {
+        return possible_token->operator.associativity;
+      }
+    }
+
+    possible_token++;
+  }
+
+  return 0;
+}
+
