@@ -56,7 +56,7 @@ int8_t function_infix_to_postfix(char (*infix)[TOKEN_MAX_LENGTH], char (*postfix
 
     // Case for if token is a double literal or constant.
     if(token_type == TOKEN_LITERAL || token_type == TOKEN_CONSTANT || token_type == TOKEN_X) {
-      strcpy(*postfix, token);
+      strncpy(*postfix, token, TOKEN_MAX_LENGTH - 1);
       postfix++;
     }
 
@@ -210,13 +210,13 @@ int8_t __function_get_operator_attribute(const char *token, OperatorAttribute at
 char *ostack_peek(OperatorStack *stack, char *dest) {
   if(stack->top == -1) return NULL;
 
-  return strcpy(dest, stack->data[stack->top]);
+  return strncpy(dest, stack->data[stack->top], TOKEN_MAX_LENGTH - 1);
 }
 
 char *ostack_pop(OperatorStack *stack, char *dest) {
   if(stack->top == -1) return NULL;
 
-  char *ret = strcpy(dest, stack->data[stack->top]);
+  char *ret = strncpy(dest, stack->data[stack->top], TOKEN_MAX_LENGTH - 1);
   stack->top--;
 
   return ret;
@@ -227,7 +227,7 @@ int8_t ostack_push(OperatorStack *stack, char *str) {
 
   stack->top++;
 
-  strcpy(stack->data[stack->top], str);
+  strncpy(stack->data[stack->top], str, TOKEN_MAX_LENGTH - 1);
 
   return 1;
 }
