@@ -62,52 +62,52 @@ int8_t function_infix_to_postfix(char (*infix)[TOKEN_MAX_LENGTH], char (*postfix
 
     // Case for if token is a function.
     else if(token_type == TOKEN_FUNCTION) {
-      stack_push(&operator_stack, token); 
+      ostack_push(&operator_stack, token); 
     }
 
     // Case for if token is an operator.
     else if(token_type == TOKEN_OPERATOR) {
-      while(stack_peek(&operator_stack, operator_stack_element_buffer) != NULL &&
+      while(ostack_peek(&operator_stack, operator_stack_element_buffer) != NULL &&
             IS_OPERATOR(operator_stack_element_buffer) && 
             !IS_LEFT_PARENTHESIS(operator_stack_element_buffer) &&
             (GET_PRECEDENCE(operator_stack_element_buffer) > GET_PRECEDENCE(token) ||
              (GET_PRECEDENCE(operator_stack_element_buffer) == GET_PRECEDENCE(token) &&
               GET_ASSOCIATIVITY(token) == __LEFT))) 
       {
-        stack_pop(&operator_stack, *postfix);
+        ostack_pop(&operator_stack, *postfix);
         postfix++;
       }
-      stack_push(&operator_stack, token);
+      ostack_push(&operator_stack, token);
     }
 
     // Case for if token is a left parenthesis.
     else if(token_type == TOKEN_PARENTHESIS && !strcmp(token, "(")) {
-      stack_push(&operator_stack, token);
+      ostack_push(&operator_stack, token);
     }
 
     // Case for if token is a right parenthesis.
     else if(token_type == TOKEN_PARENTHESIS && !strcmp(token, ")")) {
-      while(stack_peek(&operator_stack, operator_stack_element_buffer) != NULL &&
+      while(ostack_peek(&operator_stack, operator_stack_element_buffer) != NULL &&
             strcmp(operator_stack_element_buffer, "("))
       {
         // Mismatched parentheses
-        if(stack_peek(&operator_stack, operator_stack_element_buffer) == NULL) {
+        if(ostack_peek(&operator_stack, operator_stack_element_buffer) == NULL) {
           return 0;
         }
-        stack_pop(&operator_stack, *postfix);
+        ostack_pop(&operator_stack, *postfix);
         postfix++;
       }
       // Mismatched parentheses
-      if(stack_peek(&operator_stack, operator_stack_element_buffer) != NULL &&
+      if(ostack_peek(&operator_stack, operator_stack_element_buffer) != NULL &&
          strcmp(operator_stack_element_buffer, "("))
       {
           return 0;
       } 
-      stack_pop(&operator_stack, operator_stack_element_buffer); // Discard left parentheses.
-      if(stack_peek(&operator_stack, operator_stack_element_buffer) != NULL &&
+      ostack_pop(&operator_stack, operator_stack_element_buffer); // Discard left parentheses.
+      if(ostack_peek(&operator_stack, operator_stack_element_buffer) != NULL &&
          IS_FUNCTION(operator_stack_element_buffer))
       {
-        stack_pop(&operator_stack, *postfix);
+        ostack_pop(&operator_stack, *postfix);
         postfix++;
       }
     }
@@ -117,13 +117,13 @@ int8_t function_infix_to_postfix(char (*infix)[TOKEN_MAX_LENGTH], char (*postfix
   } 
 
   // Pop the remaining items from the operator stack to the postfix queue.
-  while(stack_peek(&operator_stack, operator_stack_element_buffer) != NULL) {
+  while(ostack_peek(&operator_stack, operator_stack_element_buffer) != NULL) {
     // Mismatched parentheses.
     if(!strcmp(operator_stack_element_buffer, "(")) {
       return 0;
     }
     
-    stack_pop(&operator_stack, *postfix);
+    ostack_pop(&operator_stack, *postfix);
 
     postfix++;
   }
@@ -207,13 +207,13 @@ int8_t __function_get_operator_attribute(const char *token, OperatorAttribute at
 /*
 * Operator Stack Components
 */
-char *stack_peek(OperatorStack *stack, char *dest) {
+char *ostack_peek(OperatorStack *stack, char *dest) {
   if(stack->top == -1) return NULL;
 
   return strcpy(dest, stack->data[stack->top]);
 }
 
-char *stack_pop(OperatorStack *stack, char *dest) {
+char *ostack_pop(OperatorStack *stack, char *dest) {
   if(stack->top == -1) return NULL;
 
   char *ret = strcpy(dest, stack->data[stack->top]);
@@ -222,7 +222,7 @@ char *stack_pop(OperatorStack *stack, char *dest) {
   return ret;
 }
 
-int8_t stack_push(OperatorStack *stack, char *str) {
+int8_t ostack_push(OperatorStack *stack, char *str) {
   if(stack->top == OPERATOR_STACK_CAPACITY - 1) return 0;
 
   stack->top++;

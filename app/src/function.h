@@ -80,9 +80,9 @@ typedef struct OperatorStack {
 
 #define OPERATOR_STACK_INIT(_name) static OperatorStack _name = { .top=-1 }
 
-char *stack_peek(OperatorStack *stack, char *dest);
-char *stack_pop(OperatorStack *stack, char* dest);
-int8_t stack_push(OperatorStack *stack, char *str);
+char *ostack_peek(OperatorStack *stack, char *dest);
+char *ostack_pop(OperatorStack *stack, char* dest);
+int8_t ostack_push(OperatorStack *stack, char *str);
 
 
 #endif
