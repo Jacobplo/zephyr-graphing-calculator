@@ -134,6 +134,12 @@ int8_t function_infix_to_postfix(char (*infix)[TOKEN_MAX_LENGTH], char (*postfix
   return 1;
 }
 
+
+double evaluate_postfix(char (*postfix)[TOKEN_MAX_LENGTH], double x_val) {
+   
+}
+
+
 TokenType __function_get_token_type(const char *token) { 
   // Compare token with the defined token types
   const Token *possible_token = possible_tokens;
