@@ -5,7 +5,7 @@
 #include <stdint.h>
 #include <stddef.h>
 
-#define TOKEN_MAX_LENGTH 16
+#define TOKEN_MAX_LENGTH 8
 
 // Should end with a NULL.
 #define FUNCTION_TOKEN_BUFFER(name, size) static char (name)[size][TOKEN_MAX_LENGTH]
