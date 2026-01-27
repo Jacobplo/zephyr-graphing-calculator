@@ -1,3 +1,4 @@
+#include <string.h>
 #include <zephyr/kernel.h>
 #include <zephyr/drivers/gpio.h>
 #include <zephyr/sys/printk.h>
@@ -37,13 +38,16 @@ int main(void) {
   strcpy(infix[6], "(");
   strcpy(infix[7], "1");
   strcpy(infix[8], "-");
-  strcpy(infix[9], "x");
+  strcpy(infix[9], "5");
   strcpy(infix[10], ")");
   strcpy(infix[11], "^");
   strcpy(infix[12], "2");
-  strcpy(infix[13], "^");
-  strcpy(infix[14], "3");
-  infix[15][0] = '\0';
+  strcpy(infix[13], "*");
+  strcpy(infix[14], "sin");
+  strcpy(infix[15], "(");
+  strcpy(infix[16], "2");
+  strcpy(infix[17], ")");
+  infix[18][0] = '\0';
 
   function_infix_to_postfix(infix, postfix, MAX_FUNCTION_TOKENS);
 
@@ -51,6 +55,8 @@ int main(void) {
     printk("%s ", postfix[i]);  
   }
   printk("\n");
+
+  printk("%lf\n", function_evaluate_postfix(postfix, 0));
 
   while(1) {
     k_msleep(SLEEP_MS);

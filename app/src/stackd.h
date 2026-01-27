@@ -12,8 +12,8 @@ typedef struct StackD {
 
 #define STACKD_INIT(_name) static StackD _name = { .top=-1 }
 
-double stack_peek(StackD *stack);
-double stack_pop(StackD *stack);
-int8_t stack_push(StackD *stack, double val);
+double stackd_peek(StackD *stack);
+double stackd_pop(StackD *stack);
+int8_t stackd_push(StackD *stack, double val);
 
 #endif
