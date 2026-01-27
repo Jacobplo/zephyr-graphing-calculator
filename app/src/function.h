@@ -71,7 +71,7 @@ int8_t __function_get_operator_attribute(const char *token, OperatorAttribute at
 /*
 * Operator Stack Components
 */
-#define OPERATOR_STACK_CAPACITY 1024
+#define OPERATOR_STACK_CAPACITY 256
 
 typedef struct OperatorStack {
   char data[OPERATOR_STACK_CAPACITY][TOKEN_MAX_LENGTH];
