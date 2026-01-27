@@ -12,9 +12,10 @@
 
 #define IS_OPERATOR(str) (__function_get_token_type(str) == TOKEN_OPERATOR)
 #define IS_FUNCTION(str) (__function_get_token_type(str) == TOKEN_FUNCTION)
-#define IS_LEFT_PARENTHESIS(str) (!strcmp((str), "("))
+#define IS_LEFT_PARENTHESIS(str) (!strncmp((str), "(", TOKEN_MAX_LENGTH - 1))
 #define GET_PRECEDENCE(str) (__function_get_operator_attribute((str), OPERATOR_PRECEDENCE))
 #define GET_ASSOCIATIVITY(str) (__function_get_operator_attribute((str), OPERATOR_ASSOCIATIVITY))
+
 
 static const Token possible_tokens[] = {
   // Operators
@@ -84,14 +85,14 @@ int8_t function_infix_to_postfix(char (*infix)[TOKEN_MAX_LENGTH], char (*postfix
     }
 
     // Case for if token is a left parenthesis.
-    else if(token_type == TOKEN_PARENTHESIS && !strcmp(token, "(")) {
+    else if(token_type == TOKEN_PARENTHESIS && !strncmp(token, "(", TOKEN_MAX_LENGTH - 1)) {
       ostack_push(&operator_stack, token);
     }
 
     // Case for if token is a right parenthesis.
-    else if(token_type == TOKEN_PARENTHESIS && !strcmp(token, ")")) {
+    else if(token_type == TOKEN_PARENTHESIS && !strncmp(token, ")", TOKEN_MAX_LENGTH - 1)) {
       while(ostack_peek(&operator_stack, operator_stack_element_buffer) != NULL &&
-            strcmp(operator_stack_element_buffer, "("))
+            strncmp(operator_stack_element_buffer, "(", TOKEN_MAX_LENGTH - 1))
       {
         // Mismatched parentheses
         if(ostack_peek(&operator_stack, operator_stack_element_buffer) == NULL) {
@@ -102,7 +103,7 @@ int8_t function_infix_to_postfix(char (*infix)[TOKEN_MAX_LENGTH], char (*postfix
       }
       // Mismatched parentheses
       if(ostack_peek(&operator_stack, operator_stack_element_buffer) != NULL &&
-         strcmp(operator_stack_element_buffer, "("))
+         strncmp(operator_stack_element_buffer, "(", TOKEN_MAX_LENGTH - 1))
       {
           return 0;
       } 
@@ -122,7 +123,7 @@ int8_t function_infix_to_postfix(char (*infix)[TOKEN_MAX_LENGTH], char (*postfix
   // Pop the remaining items from the operator stack to the postfix queue.
   while(ostack_peek(&operator_stack, operator_stack_element_buffer) != NULL) {
     // Mismatched parentheses.
-    if(!strcmp(operator_stack_element_buffer, "(")) {
+    if(!strncmp(operator_stack_element_buffer, "(", TOKEN_MAX_LENGTH - 1)) {
       return 0;
     }
     
@@ -158,28 +159,28 @@ double function_evaluate_postfix(char (*postfix)[TOKEN_MAX_LENGTH], double x_val
 
     // Apply a unary function to the next operand on the stack.
     else if(token_type == TOKEN_FUNCTION) {
-      if(!strcmp(token, "sin")) {
+      if(!strncmp(token, "sin", TOKEN_MAX_LENGTH - 1)) {
         stackd_push(&operand_stack, sin(stackd_pop(&operand_stack)));
       }
-      else if(!strcmp(token, "cos")) {
+      else if(!strncmp(token, "cos", TOKEN_MAX_LENGTH - 1)) {
         stackd_push(&operand_stack, cos(stackd_pop(&operand_stack)));
       }
-      else if(!strcmp(token, "tan")) {
+      else if(!strncmp(token, "tan", TOKEN_MAX_LENGTH - 1)) {
         stackd_push(&operand_stack, tan(stackd_pop(&operand_stack)));
       }
-      else if(!strcmp(token, "abs")) {
+      else if(!strncmp(token, "abs", TOKEN_MAX_LENGTH - 1)) {
         stackd_push(&operand_stack, fabs(stackd_pop(&operand_stack)));
       }
-      else if(!strcmp(token, "sqrt")) {
+      else if(!strncmp(token, "sqrt", TOKEN_MAX_LENGTH - 1)) {
         stackd_push(&operand_stack, sqrt(stackd_pop(&operand_stack)));
       }
-      else if(!strcmp(token, "ln")) {
+      else if(!strncmp(token, "ln", TOKEN_MAX_LENGTH - 1)) {
         stackd_push(&operand_stack, log(stackd_pop(&operand_stack)));
       }
-      else if(!strcmp(token, "floor")) {
+      else if(!strncmp(token, "floor", TOKEN_MAX_LENGTH - 1)) {
         stackd_push(&operand_stack, floor(stackd_pop(&operand_stack)));
       }
-      else if(!strcmp(token, "ceil")) {
+      else if(!strncmp(token, "ceil", TOKEN_MAX_LENGTH - 1)) {
         stackd_push(&operand_stack, ceil(stackd_pop(&operand_stack)));
       }
     }
@@ -188,19 +189,19 @@ double function_evaluate_postfix(char (*postfix)[TOKEN_MAX_LENGTH], double x_val
     else if(token_type == TOKEN_OPERATOR) {
       double operand_one = stackd_pop(&operand_stack);
       double operand_two = stackd_pop(&operand_stack);
-      if(!strcmp(token, "+")) {
+      if(!strncmp(token, "+", TOKEN_MAX_LENGTH - 1)) {
         stackd_push(&operand_stack, operand_two + operand_one);
       }
-      else if(!strcmp(token, "-")) {
+      else if(!strncmp(token, "-", TOKEN_MAX_LENGTH - 1)) {
         stackd_push(&operand_stack, operand_two - operand_one);
       }
-      else if(!strcmp(token, "*")) {
+      else if(!strncmp(token, "*", TOKEN_MAX_LENGTH - 1)) {
         stackd_push(&operand_stack, operand_two * operand_one);
       }
-      else if(!strcmp(token, "/")) {
+      else if(!strncmp(token, "/", TOKEN_MAX_LENGTH - 1)) {
         stackd_push(&operand_stack, operand_two / operand_one);
       }
-      else if(!strcmp(token, "^")) {
+      else if(!strncmp(token, "^", TOKEN_MAX_LENGTH - 1)) {
         stackd_push(&operand_stack, pow(operand_two, operand_one));
       }
     }
@@ -216,13 +217,13 @@ TokenType __function_get_token_type(const char *token) {
   // Compare token with the defined token types
   const Token *possible_token = possible_tokens;
   while(possible_token->token_type != TOKEN_NONE) { 
-    if(possible_token->token_type == TOKEN_OPERATOR && !strcmp(possible_token->operator.symbol, token)) {
+    if(possible_token->token_type == TOKEN_OPERATOR && !strncmp(possible_token->operator.symbol, token, TOKEN_MAX_LENGTH - 1)) {
       return TOKEN_OPERATOR;
     }
-    else if(possible_token->token_type == TOKEN_FUNCTION && !strcmp(possible_token->function, token)) {
+    else if(possible_token->token_type == TOKEN_FUNCTION && !strncmp(possible_token->function, token, TOKEN_MAX_LENGTH - 1)) {
       return TOKEN_FUNCTION;
     }
-    else if(possible_token->token_type == TOKEN_CONSTANT && !strcmp(possible_token->constant.symbol, token)) {
+    else if(possible_token->token_type == TOKEN_CONSTANT && !strncmp(possible_token->constant.symbol, token, TOKEN_MAX_LENGTH - 1)) {
       return TOKEN_CONSTANT;
     }
 
@@ -248,7 +249,7 @@ TokenType __function_get_token_type(const char *token) {
 double __function_get_constant(const char *token) {
   const Token *possible_token = possible_tokens;
   while(possible_tokens->token_type != TOKEN_NONE) {
-    if(possible_token->token_type == TOKEN_CONSTANT && !strcmp(possible_token->constant.symbol, token)) {
+    if(possible_token->token_type == TOKEN_CONSTANT && !strncmp(possible_token->constant.symbol, token, TOKEN_MAX_LENGTH - 1)) {
       return possible_token->constant.value;
     }
 
@@ -261,7 +262,7 @@ double __function_get_constant(const char *token) {
 int8_t __function_get_operator_attribute(const char *token, OperatorAttribute attribute) {
   const Token *possible_token = possible_tokens;
   while(possible_tokens->token_type != TOKEN_NONE) {
-    if(possible_token->token_type == TOKEN_OPERATOR && !strcmp(possible_token->operator.symbol, token)) {
+    if(possible_token->token_type == TOKEN_OPERATOR && !strncmp(possible_token->operator.symbol, token, TOKEN_MAX_LENGTH - 1)) {
       if(attribute == OPERATOR_PRECEDENCE) {
         return possible_token->operator.precedence;
       }
