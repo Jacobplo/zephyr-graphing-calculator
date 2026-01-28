@@ -47,6 +47,7 @@ static const Token possible_tokens[] = {
 
 int8_t function_infix_to_postfix(char (*infix)[TOKEN_MAX_LENGTH], char (*postfix)[TOKEN_MAX_LENGTH], size_t token_buffer_size) {
   OPERATOR_STACK_INIT(operator_stack);
+  operator_stack.top = -1;  // Reset stack state because it is static.
 
   char operator_stack_element_buffer[TOKEN_MAX_LENGTH];
 
@@ -141,6 +142,7 @@ int8_t function_infix_to_postfix(char (*infix)[TOKEN_MAX_LENGTH], char (*postfix
 
 double function_evaluate_postfix(char (*postfix)[TOKEN_MAX_LENGTH], double x_val) {
   STACKD_INIT(operand_stack);
+  operand_stack.top = -1;  // Reset stack state because it is static.
 
   while(*postfix[0]) {
     char *token = *postfix;
