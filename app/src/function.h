@@ -84,5 +84,4 @@ char *ostack_peek(OperatorStack *stack, char *dest);
 char *ostack_pop(OperatorStack *stack, char* dest);
 int8_t ostack_push(OperatorStack *stack, char *str);
 
-
 #endif

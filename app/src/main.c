@@ -5,6 +5,7 @@
 #include <zephyr/device.h>
 
 #include "function.h"
+#include "graph_display.h"
 
 #include "LED.h"
 #include "BTN.h"
