@@ -12,13 +12,17 @@
 
 #define SLEEP_MS 1
 
-#define MAX_FUNCTIONS 10
-#define MAX_FUNCTION_TOKENS 128
-static Function functions[MAX_FUNCTIONS];
+#define MAX_FUNCTIONS 5
+#define MAX_FUNCTION_TOKENS 32
+static volatile Function functions[MAX_FUNCTIONS];
 FUNCTION_TOKEN_BUFFER(infix, MAX_FUNCTION_TOKENS);
 FUNCTION_TOKEN_BUFFER(postfix, MAX_FUNCTION_TOKENS);
 
 int main(void) {
+  for(int i = 0; i < 5; i++) {
+    functions[i].x[0] = 0;
+    functions[i].x[0] = 0;
+  }
   if (BTN_init() < 0) {
     printk("BTN_init: Failed");
     return 0;
