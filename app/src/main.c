@@ -20,6 +20,11 @@ FUNCTION_TOKEN_BUFFER(infix, MAX_FUNCTION_TOKENS);
 FUNCTION_TOKEN_BUFFER(postfix, MAX_FUNCTION_TOKENS);
 
 int main(void) {
+  if (display_init() < 0) {
+    printk("display_init: failed\n");
+    return 0;
+  }
+
   for(int i = 0; i < 5; i++) {
     functions[i].x[0] = 0;
     functions[i].x[0] = 0;
@@ -63,7 +68,13 @@ int main(void) {
 
   printk("%lf\n", function_evaluate_postfix(postfix, 0));
 
+  
+
+  graph_draw_line(0, SCREEN_WIDTH, 0, SCREEN_HEIGHT);
+
+
   while(1) {
+    display_timer_handler(); 
     k_msleep(SLEEP_MS);
   }
 }
