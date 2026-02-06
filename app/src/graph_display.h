@@ -1,6 +1,7 @@
 #ifndef GRAPH_DISPLAY_H_
 #define GRAPH_DISPLAY_H_
 
+#include "misc/lv_area.h"
 #include "stdint.h"
 #include "lvgl.h"
 #include "function.h"
@@ -27,7 +28,7 @@
 int8_t display_init(void);
 void graph_draw_axes(void);
 void graph_draw_function(Function *func);
-void graph_draw_line(lv_value_precise_t x1, lv_value_precise_t x2, lv_value_precise_t y1, lv_value_precise_t y2, uint32_t color_hex);
+void graph_draw_line(const lv_point_precise_t *points, size_t num_points, uint32_t color_hex);
 
 static inline void display_timer_handler(void) {
   lv_timer_handler();

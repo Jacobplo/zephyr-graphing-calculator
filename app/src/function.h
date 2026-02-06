@@ -1,6 +1,7 @@
 #ifndef FUNCTION_H_
 #define FUNCTION_H_
 
+#include "misc/lv_area.h"
 #include <stdbool.h>
 #include <stdint.h>
 #include <stddef.h>
@@ -20,6 +21,7 @@
 typedef struct Function {
   double x[512];
   double y[512];
+  lv_point_precise_t points[512];
 } Function;
 
 

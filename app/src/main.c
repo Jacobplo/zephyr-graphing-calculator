@@ -70,11 +70,12 @@ int main(void) {
 
   
 
-  graph_draw_line(0, SCREEN_WIDTH, 0, SCREEN_HEIGHT, 0xff0000);
+  //graph_draw_line(0, SCREEN_WIDTH, 0, SCREEN_HEIGHT, 0xff0000);
+  graph_draw_axes();
 
 
   while(1) {
-    display_timer_handler(); 
+    display_timer_handler();
     k_msleep(SLEEP_MS);
   }
 }
