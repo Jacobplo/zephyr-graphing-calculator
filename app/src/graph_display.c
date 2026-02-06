@@ -42,6 +42,10 @@ void graph_draw_axes(void) {
   graph_draw_line(main_axes[0], 2, 0x000000);
   // y-axis
   graph_draw_line(main_axes[1], 2, 0x000000);
+
+  /*
+  * Draw axis ticks
+  */
 }
 
 void graph_draw_function(Function *func) {
@@ -55,7 +59,7 @@ void graph_draw_line(const lv_point_precise_t *points, size_t num_points, uint32
   lv_style_set_line_color(&style, lv_color_hex(color_hex));
 
   lv_obj_t *line = lv_line_create(screen);
-  lv_line_set_points(line, points, 2);
+  lv_line_set_points(line, points, num_points);
   lv_obj_add_style(line, &style, 0);
 }
 
