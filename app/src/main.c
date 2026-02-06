@@ -70,7 +70,7 @@ int main(void) {
 
   
 
-  graph_draw_line(0, SCREEN_WIDTH, 0, SCREEN_HEIGHT);
+  graph_draw_line(0, SCREEN_WIDTH, 0, SCREEN_HEIGHT, 0xff0000);
 
 
   while(1) {

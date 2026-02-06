@@ -6,6 +6,7 @@
 #include "function.h"
 
 #include "misc/lv_timer.h"
+#include <stdint.h>
 
 
 #define SCREEN_WIDTH        320
@@ -26,7 +27,7 @@
 int8_t display_init(void);
 void graph_draw_axes(void);
 void graph_draw_function(Function *func);
-void graph_draw_line(lv_value_precise_t x1, lv_value_precise_t x2, lv_value_precise_t y1, lv_value_precise_t y2);
+void graph_draw_line(lv_value_precise_t x1, lv_value_precise_t x2, lv_value_precise_t y1, lv_value_precise_t y2, uint32_t color_hex);
 
 static inline void display_timer_handler(void) {
   lv_timer_handler();
