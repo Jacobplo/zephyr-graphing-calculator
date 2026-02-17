@@ -25,8 +25,8 @@
 #define SCREEN_HEIGHT           240
 #define SCREEN_X_MID            (SCREEN_WIDTH / 2)
 #define SCREEN_Y_MID            (SCREEN_HEIGHT / 2)
-#define SCREEN_TICK_WIDTH_X     (SCREEN_WIDTH / 20)
-#define SCREEN_TICK_WIDTH_Y     (SCREEN_HEIGHT / 20)
+#define SCREEN_TICK_WIDTH_X     (SCREEN_WIDTH / X_SPAN)
+#define SCREEN_TICK_WIDTH_Y     (SCREEN_HEIGHT / Y_SPAN)
 #define SCREEN_X_SCALER         ((float)SCREEN_WIDTH / FUNCTION_NUM_POINTS)
 #define SCREEN_X_COORD(i)       ((int)((i) * SCREEN_X_SCALER))
 #define SCREEN_Y_COORD(y)       ((int)(SCREEN_Y_MID + -1 * (y) * (SCREEN_HEIGHT / Y_SPAN))) 
