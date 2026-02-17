@@ -76,21 +76,31 @@ void graph_draw_axes(void) {
 void graph_draw_function(Function *func) {
   static const uint32_t color_queue[NUM_COLORS] = { 0xff0000, 0x0000ff, 0x00ff00 };
   static uint8_t color_index = 0;
-  printk("%d\n", color_index);
 
   lv_style_init(&func->style);
   lv_style_set_line_width(&func->style, 2);
   lv_style_set_line_color(&func->style, lv_color_hex(color_queue[color_index]));
   color_index == NUM_COLORS - 1 ? color_index = 0 : color_index++;
-  
-  // Convert all function x and y values to pixel coordinate points
-  for (int16_t i = 0; i < FUNCTION_NUM_POINTS; i++) {
+
+  // Default num_asymptotes to 1 because the first the points prior to the first asymptote must be drawn
+  uint16_t asymptote_indices[100] = {0}; 
+  uint16_t num_asymptotes = 1;
+  // Convert all function x and y values to pixel coordinate points, keeping track of asymptotes
+  for (uint16_t i = 0; i < FUNCTION_NUM_POINTS; i++) {
+    if (i > 0 && (func->y[i] + Y_SPAN < func->y[i - 1] || func->y[i] - Y_SPAN > func->y[i - 1])) {
+      asymptote_indices[num_asymptotes] = i;
+      num_asymptotes++;
+    }
+
     func->points[i].x = SCREEN_X_COORD(i);
     func->points[i].y = SCREEN_Y_COORD(func->y[i]);
   }
+  asymptote_indices[num_asymptotes] = FUNCTION_NUM_POINTS;
 
-  // Draw graph
-  graph_draw_line(func->points, FUNCTION_NUM_POINTS, &func->style);
+  // Draw graph, preventing connection of points on asymptotes
+  for (uint16_t i = 0; i < num_asymptotes; i++) {
+    graph_draw_line(func->points + asymptote_indices[i], asymptote_indices[i + 1] - asymptote_indices[i], &func->style);
+  }
 }
 
 void graph_draw_line(const lv_point_precise_t *points, size_t num_points, lv_style_t *style) {
