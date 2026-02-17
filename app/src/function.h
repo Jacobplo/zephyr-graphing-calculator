@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #define TOKEN_MAX_LENGTH 8
+#define FUNCTION_NUM_POINTS 512
 
 // Should end with a NULL.
 #define FUNCTION_TOKEN_BUFFER(name, size) static char (name)[size][TOKEN_MAX_LENGTH]
@@ -19,9 +20,9 @@
 
 
 typedef struct Function {
-  double x[512];
-  double y[512];
-  lv_point_precise_t points[512];
+  double x[FUNCTION_NUM_POINTS];
+  double y[FUNCTION_NUM_POINTS];
+  lv_point_precise_t points[FUNCTION_NUM_POINTS];
 } Function;
 
 
