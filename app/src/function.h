@@ -2,6 +2,7 @@
 #define FUNCTION_H_
 
 #include "misc/lv_area.h"
+#include "misc/lv_style.h"
 #include <stdbool.h>
 #include <stdint.h>
 #include <stddef.h>
@@ -23,6 +24,7 @@ typedef struct Function {
   float x[FUNCTION_NUM_POINTS];
   float y[FUNCTION_NUM_POINTS];
   lv_point_precise_t points[FUNCTION_NUM_POINTS];
+  lv_style_t style;
 } Function;
 
 

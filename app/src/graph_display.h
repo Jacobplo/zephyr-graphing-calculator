@@ -31,12 +31,12 @@
 #define SCREEN_X_COORD(i)       ((int)((i) * SCREEN_X_SCALER))
 #define SCREEN_Y_COORD(y)       ((int)(SCREEN_Y_MID + -1 * (y) * (SCREEN_HEIGHT / Y_SPAN))) 
 
-
+#define NUM_COLORS      3
 
 int8_t display_init(void);
 void graph_draw_axes(void);
 void graph_draw_function(Function *func);
-void graph_draw_line(const lv_point_precise_t *points, size_t num_points, uint32_t color_hex);
+void graph_draw_line(const lv_point_precise_t *points, size_t num_points, lv_style_t *style);
 
 static inline void display_timer_handler(void) {
   lv_timer_handler();

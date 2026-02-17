@@ -7,6 +7,8 @@
 
 
 #include "function.h"
+#include "misc/lv_color.h"
+#include "misc/lv_palette.h"
 #include "widgets/line/lv_line.h"
 #include "misc/lv_area.h"
 #include "misc/lv_style.h"
@@ -33,6 +35,11 @@ int8_t display_init(void) {
 }
 
 void graph_draw_axes(void) {
+  static lv_style_t axis_style;
+  lv_style_init(&axis_style);
+  lv_style_set_line_width(&axis_style, 1);
+  lv_style_set_line_color(&axis_style, lv_color_hex(0x000000));
+  
   /*
   * Draw axis main lines
   */
@@ -41,9 +48,9 @@ void graph_draw_axes(void) {
     { { SCREEN_X_MID, 0 }, { SCREEN_X_MID, SCREEN_HEIGHT } }
   };
   // x-axis
-  graph_draw_line(main_axes[0], 2, 0x000000);
+  graph_draw_line(main_axes[0], 2, &axis_style);
   // y-axis
-  graph_draw_line(main_axes[1], 2, 0x000000);
+  graph_draw_line(main_axes[1], 2, &axis_style);
 
   /*
   * Draw axis ticks
@@ -54,7 +61,7 @@ void graph_draw_axes(void) {
     axis_xticks[i][0].y = SCREEN_Y_MID - 3;
     axis_xticks[i][1].x = x;
     axis_xticks[i][1].y = SCREEN_Y_MID + 3;
-    graph_draw_line(axis_xticks[i], 2, 0x000000);
+    graph_draw_line(axis_xticks[i], 2, &axis_style);
   }
   static lv_point_precise_t axis_yticks[19][2];
   for (int16_t y = SCREEN_TICK_WIDTH_Y, i = 0; y < SCREEN_HEIGHT; y += SCREEN_TICK_WIDTH_Y, i++) {
@@ -62,30 +69,33 @@ void graph_draw_axes(void) {
     axis_yticks[i][0].y = y;
     axis_yticks[i][1].x = SCREEN_X_MID + 3;
     axis_yticks[i][1].y = y;
-    graph_draw_line(axis_yticks[i], 2, 0x000000);
+    graph_draw_line(axis_yticks[i], 2, &axis_style);
   }
 }
 
 void graph_draw_function(Function *func) {
+  static const uint32_t color_queue[NUM_COLORS] = { 0xff0000, 0x0000ff, 0x00ff00 };
+  static uint8_t color_index = 0;
+  printk("%d\n", color_index);
+
+  lv_style_init(&func->style);
+  lv_style_set_line_width(&func->style, 2);
+  lv_style_set_line_color(&func->style, lv_color_hex(color_queue[color_index]));
+  color_index == NUM_COLORS - 1 ? color_index = 0 : color_index++;
+  
   // Convert all function x and y values to pixel coordinate points
   for (int16_t i = 0; i < FUNCTION_NUM_POINTS; i++) {
     func->points[i].x = SCREEN_X_COORD(i);
     func->points[i].y = SCREEN_Y_COORD(func->y[i]);
-    printk("(%d, %d)\n", func->points[i].x, func->points[i].y);
   }
 
   // Draw graph
-  graph_draw_line(func->points, FUNCTION_NUM_POINTS, 0x000000);
+  graph_draw_line(func->points, FUNCTION_NUM_POINTS, &func->style);
 }
 
-void graph_draw_line(const lv_point_precise_t *points, size_t num_points, uint32_t color_hex) {
-  static lv_style_t style;
-  lv_style_init(&style);
-  lv_style_set_line_width(&style, 1);
-  lv_style_set_line_color(&style, lv_color_hex(color_hex));
-
+void graph_draw_line(const lv_point_precise_t *points, size_t num_points, lv_style_t *style) {
   lv_obj_t *line = lv_line_create(screen);
   lv_line_set_points(line, points, num_points);
-  lv_obj_add_style(line, &style, 0);
+  lv_obj_add_style(line, style, 0);
 }
 

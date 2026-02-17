@@ -55,7 +55,7 @@ int main(void) {
   //strcpy(infix[17], ")");
   //infix[18][0] = '\0';
  
-  strcpy(infix[0], "sin");
+  strcpy(infix[0], "tan");
   strcpy(infix[1], "(");
   strcpy(infix[2], "x");
   strcpy(infix[3], ")");
@@ -76,11 +76,32 @@ int main(void) {
     x += X_INCREMENT;
     //printk("(%f, %f)\n", (double)functions[0].x[i], (double)functions[0].y[i]);
   }
+
+  strcpy(infix[0], "x");
+  strcpy(infix[1], "^");
+  strcpy(infix[2], "2");
+  infix[3][0] = '\0';
+
+  function_infix_to_postfix(infix, postfix, MAX_FUNCTION_TOKENS);
+
+  for(int i = 0; i < MAX_FUNCTION_TOKENS && postfix[i][0] != '\0'; i++) {
+    printk("%s ", postfix[i]);  
+  }
+  printk("\n");
+
+  x = X_MIN;
+  for (int16_t i = 0; i < FUNCTION_NUM_POINTS; i++) {
+    functions[1].x[i] = x;
+    functions[1].y[i] = (float)function_evaluate_postfix(postfix, (double)x);
+    x += X_INCREMENT;
+    //printk("(%f, %f)\n", (double)functions[0].x[i], (double)functions[0].y[i]);
+  }
     
 
   //graph_draw_line(0, SCREEN_WIDTH, 0, SCREEN_HEIGHT, 0xff0000);
   graph_draw_axes();
   graph_draw_function(&functions[0]);
+  graph_draw_function(&functions[1]);
 
 
   while(1) {
