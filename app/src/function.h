@@ -20,8 +20,8 @@
 
 
 typedef struct Function {
-  double x[FUNCTION_NUM_POINTS];
-  double y[FUNCTION_NUM_POINTS];
+  float x[FUNCTION_NUM_POINTS];
+  float y[FUNCTION_NUM_POINTS];
   lv_point_precise_t points[FUNCTION_NUM_POINTS];
 } Function;
 

@@ -63,12 +63,19 @@ void graph_draw_axes(void) {
     axis_yticks[i][1].x = SCREEN_X_MID + 3;
     axis_yticks[i][1].y = y;
     graph_draw_line(axis_yticks[i], 2, 0x000000);
-    printk("%d\n", y);
   }
 }
 
 void graph_draw_function(Function *func) {
+  // Convert all function x and y values to pixel coordinate points
+  for (int16_t i = 0; i < FUNCTION_NUM_POINTS; i++) {
+    func->points[i].x = SCREEN_X_COORD(i);
+    func->points[i].y = SCREEN_Y_COORD(func->y[i]);
+    printk("(%d, %d)\n", func->points[i].x, func->points[i].y);
+  }
 
+  // Draw graph
+  graph_draw_line(func->points, FUNCTION_NUM_POINTS, 0x000000);
 }
 
 void graph_draw_line(const lv_point_precise_t *points, size_t num_points, uint32_t color_hex) {
