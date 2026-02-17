@@ -7,7 +7,7 @@
 #include <string.h>
 #include <math.h>
 
-#include "stackd.h"
+#include "stackf.h"
 
 
 #define IS_OPERATOR(str) (__function_get_token_type(str) == TOKEN_OPERATOR)
@@ -140,8 +140,8 @@ int8_t function_infix_to_postfix(char (*infix)[TOKEN_MAX_LENGTH], char (*postfix
 }
 
 
-double function_evaluate_postfix(char (*postfix)[TOKEN_MAX_LENGTH], double x_val) {
-  STACKD_INIT(operand_stack);
+float function_evaluate_postfix(char (*postfix)[TOKEN_MAX_LENGTH], float x_val) {
+  STACKF_INIT(operand_stack);
   operand_stack.top = -1;  // Reset stack state because it is static.
 
   while(*postfix[0]) {
@@ -150,68 +150,68 @@ double function_evaluate_postfix(char (*postfix)[TOKEN_MAX_LENGTH], double x_val
 
     // Pushing any numbers, or x, to the operand stack.
     if(token_type == TOKEN_LITERAL) {
-      stackd_push(&operand_stack, strtod(token, NULL));
+      stackf_push(&operand_stack, strtod(token, NULL));
     }
     else if(token_type == TOKEN_CONSTANT) {
-      stackd_push(&operand_stack, __function_get_constant(token));
+      stackf_push(&operand_stack, __function_get_constant(token));
     }
     else if(token_type == TOKEN_X) {
-      stackd_push(&operand_stack, x_val);
+      stackf_push(&operand_stack, x_val);
     }
 
     // Apply a unary function to the next operand on the stack.
     else if(token_type == TOKEN_FUNCTION) {
       if(!strncmp(token, "sin", TOKEN_MAX_LENGTH - 1)) {
-        stackd_push(&operand_stack, sin(stackd_pop(&operand_stack)));
+        stackf_push(&operand_stack, sin(stackf_pop(&operand_stack)));
       }
       else if(!strncmp(token, "cos", TOKEN_MAX_LENGTH - 1)) {
-        stackd_push(&operand_stack, cos(stackd_pop(&operand_stack)));
+        stackf_push(&operand_stack, cos(stackf_pop(&operand_stack)));
       }
       else if(!strncmp(token, "tan", TOKEN_MAX_LENGTH - 1)) {
-        stackd_push(&operand_stack, tan(stackd_pop(&operand_stack)));
+        stackf_push(&operand_stack, tan(stackf_pop(&operand_stack)));
       }
       else if(!strncmp(token, "abs", TOKEN_MAX_LENGTH - 1)) {
-        stackd_push(&operand_stack, fabs(stackd_pop(&operand_stack)));
+        stackf_push(&operand_stack, fabs(stackf_pop(&operand_stack)));
       }
       else if(!strncmp(token, "sqrt", TOKEN_MAX_LENGTH - 1)) {
-        stackd_push(&operand_stack, sqrt(stackd_pop(&operand_stack)));
+        stackf_push(&operand_stack, sqrt(stackf_pop(&operand_stack)));
       }
       else if(!strncmp(token, "ln", TOKEN_MAX_LENGTH - 1)) {
-        stackd_push(&operand_stack, log(stackd_pop(&operand_stack)));
+        stackf_push(&operand_stack, log(stackf_pop(&operand_stack)));
       }
       else if(!strncmp(token, "floor", TOKEN_MAX_LENGTH - 1)) {
-        stackd_push(&operand_stack, floor(stackd_pop(&operand_stack)));
+        stackf_push(&operand_stack, floor(stackf_pop(&operand_stack)));
       }
       else if(!strncmp(token, "ceil", TOKEN_MAX_LENGTH - 1)) {
-        stackd_push(&operand_stack, ceil(stackd_pop(&operand_stack)));
+        stackf_push(&operand_stack, ceil(stackf_pop(&operand_stack)));
       }
     }
 
     // Apply binary operators to the next two operands on the stack.
     else if(token_type == TOKEN_OPERATOR) {
-      double operand_one = stackd_pop(&operand_stack);
-      double operand_two = stackd_pop(&operand_stack);
+      float operand_one = stackf_pop(&operand_stack);
+      float operand_two = stackf_pop(&operand_stack);
       if(!strncmp(token, "+", TOKEN_MAX_LENGTH - 1)) {
-        stackd_push(&operand_stack, operand_two + operand_one);
+        stackf_push(&operand_stack, operand_two + operand_one);
       }
       else if(!strncmp(token, "-", TOKEN_MAX_LENGTH - 1)) {
-        stackd_push(&operand_stack, operand_two - operand_one);
+        stackf_push(&operand_stack, operand_two - operand_one);
       }
       else if(!strncmp(token, "*", TOKEN_MAX_LENGTH - 1)) {
-        stackd_push(&operand_stack, operand_two * operand_one);
+        stackf_push(&operand_stack, operand_two * operand_one);
       }
       else if(!strncmp(token, "/", TOKEN_MAX_LENGTH - 1)) {
-        stackd_push(&operand_stack, operand_two / operand_one);
+        stackf_push(&operand_stack, operand_two / operand_one);
       }
       else if(!strncmp(token, "^", TOKEN_MAX_LENGTH - 1)) {
-        stackd_push(&operand_stack, pow(operand_two, operand_one));
+        stackf_push(&operand_stack, pow((double)operand_two, (double)operand_one));
       }
     }
 
     postfix++;
   }
   
-  return stackd_pop(&operand_stack);
+  return stackf_pop(&operand_stack);
 }
 
 
