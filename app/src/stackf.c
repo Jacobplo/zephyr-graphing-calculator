@@ -1,16 +1,16 @@
 #include "stackf.h"
 #include <stdbool.h>
 
-double stackf_peek(StackF *stack) {
+float stackf_peek(StackF *stack) {
   if(stack->top == -1) return 0;
 
   return stack->data[stack->top];
 }
 
-double stackf_pop(StackF *stack) {
+float stackf_pop(StackF *stack) {
   if(stack->top == -1) return 0;
 
-  double ret = stack->data[stack->top];
+  float ret = stack->data[stack->top];
   stack->top--;
   return ret;
 }

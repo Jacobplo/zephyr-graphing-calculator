@@ -72,9 +72,8 @@ int main(void) {
   float x = X_MIN;
   for (int16_t i = 0; i < FUNCTION_NUM_POINTS; i++) {
     functions[0].x[i] = x;
-    functions[0].y[i] = (float)function_evaluate_postfix(postfix, (double)x);
+    functions[0].y[i] = function_evaluate_postfix(postfix, x);
     x += X_INCREMENT;
-    //printk("(%f, %f)\n", (double)functions[0].x[i], (double)functions[0].y[i]);
   }
 
   strcpy(infix[0], "x");
@@ -92,9 +91,8 @@ int main(void) {
   x = X_MIN;
   for (int16_t i = 0; i < FUNCTION_NUM_POINTS; i++) {
     functions[1].x[i] = x;
-    functions[1].y[i] = (float)function_evaluate_postfix(postfix, (double)x);
+    functions[1].y[i] = function_evaluate_postfix(postfix, x);
     x += X_INCREMENT;
-    //printk("(%f, %f)\n", (double)functions[0].x[i], (double)functions[0].y[i]);
   }
     
 

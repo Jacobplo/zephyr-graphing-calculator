@@ -59,7 +59,7 @@ int8_t function_infix_to_postfix(char (*infix)[TOKEN_MAX_LENGTH], char (*postfix
 
     if(token_type == TOKEN_NONE) return 0;  // Fails if token is not a valid type.
 
-    // Case for if token is a double literal or constant.
+    // Case for if token is a float literal or constant.
     if(token_type == TOKEN_LITERAL || token_type == TOKEN_CONSTANT || token_type == TOKEN_X) {
       strncpy(*postfix, token, TOKEN_MAX_LENGTH - 1);
       postfix++;
@@ -162,28 +162,28 @@ float function_evaluate_postfix(char (*postfix)[TOKEN_MAX_LENGTH], float x_val) 
     // Apply a unary function to the next operand on the stack.
     else if(token_type == TOKEN_FUNCTION) {
       if(!strncmp(token, "sin", TOKEN_MAX_LENGTH - 1)) {
-        stackf_push(&operand_stack, sin(stackf_pop(&operand_stack)));
+        stackf_push(&operand_stack, (float)sin((double)stackf_pop(&operand_stack)));
       }
       else if(!strncmp(token, "cos", TOKEN_MAX_LENGTH - 1)) {
-        stackf_push(&operand_stack, cos(stackf_pop(&operand_stack)));
+        stackf_push(&operand_stack, (float)cos((double)stackf_pop(&operand_stack)));
       }
       else if(!strncmp(token, "tan", TOKEN_MAX_LENGTH - 1)) {
-        stackf_push(&operand_stack, tan(stackf_pop(&operand_stack)));
+        stackf_push(&operand_stack, (float)tan((double)stackf_pop(&operand_stack)));
       }
       else if(!strncmp(token, "abs", TOKEN_MAX_LENGTH - 1)) {
-        stackf_push(&operand_stack, fabs(stackf_pop(&operand_stack)));
+        stackf_push(&operand_stack, (float)fabs((double)stackf_pop(&operand_stack)));
       }
       else if(!strncmp(token, "sqrt", TOKEN_MAX_LENGTH - 1)) {
-        stackf_push(&operand_stack, sqrt(stackf_pop(&operand_stack)));
+        stackf_push(&operand_stack, (float)sqrt((double)stackf_pop(&operand_stack)));
       }
       else if(!strncmp(token, "ln", TOKEN_MAX_LENGTH - 1)) {
-        stackf_push(&operand_stack, log(stackf_pop(&operand_stack)));
+        stackf_push(&operand_stack, (float)log((double)stackf_pop(&operand_stack)));
       }
       else if(!strncmp(token, "floor", TOKEN_MAX_LENGTH - 1)) {
-        stackf_push(&operand_stack, floor(stackf_pop(&operand_stack)));
+        stackf_push(&operand_stack, (float)floor((double)stackf_pop(&operand_stack)));
       }
       else if(!strncmp(token, "ceil", TOKEN_MAX_LENGTH - 1)) {
-        stackf_push(&operand_stack, ceil(stackf_pop(&operand_stack)));
+        stackf_push(&operand_stack, (float)ceil((double)stackf_pop(&operand_stack)));
       }
     }
 
@@ -204,7 +204,7 @@ float function_evaluate_postfix(char (*postfix)[TOKEN_MAX_LENGTH], float x_val) 
         stackf_push(&operand_stack, operand_two / operand_one);
       }
       else if(!strncmp(token, "^", TOKEN_MAX_LENGTH - 1)) {
-        stackf_push(&operand_stack, pow((double)operand_two, (double)operand_one));
+        stackf_push(&operand_stack, (float)pow((double)operand_two, (double)operand_one));
       }
     }
 
@@ -232,7 +232,7 @@ TokenType __function_get_token_type(const char *token) {
     possible_token++;
   } 
 
-  // Check if token is a double literal.
+  // Check if token is a float literal.
   char *endptr;
   strtod(token, &endptr);
   if(endptr != token) return TOKEN_LITERAL;
@@ -248,7 +248,7 @@ TokenType __function_get_token_type(const char *token) {
   return TOKEN_NONE;
 }
 
-double __function_get_constant(const char *token) {
+float __function_get_constant(const char *token) {
   const Token *possible_token = possible_tokens;
   while(possible_tokens->token_type != TOKEN_NONE) {
     if(possible_token->token_type == TOKEN_CONSTANT && !strncmp(possible_token->constant.symbol, token, TOKEN_MAX_LENGTH - 1)) {

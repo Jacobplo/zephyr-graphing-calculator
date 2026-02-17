@@ -12,8 +12,8 @@ typedef struct StackF {
 
 #define STACKF_INIT(_name) static StackF _name = { .top=-1 }
 
-double stackf_peek(StackF *stack);
-double stackf_pop(StackF *stack);
+float stackf_peek(StackF *stack);
+float stackf_pop(StackF *stack);
 int8_t stackf_push(StackF *stack, float val);
 
 #endif

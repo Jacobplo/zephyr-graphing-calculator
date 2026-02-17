@@ -52,7 +52,7 @@ typedef struct Operator {
 
 typedef struct Constant {
   char *symbol;
-  double value;
+  float value;
 } Constant;
 
 typedef struct Token {
@@ -68,7 +68,7 @@ typedef struct Token {
 int8_t function_infix_to_postfix(char (*infix)[TOKEN_MAX_LENGTH], char (*postfix)[TOKEN_MAX_LENGTH], size_t token_buffer_size);
 float function_evaluate_postfix(char (*postfix)[TOKEN_MAX_LENGTH], float x_val);
 TokenType __function_get_token_type(const char *token);
-double __function_get_constant(const char *token);
+float __function_get_constant(const char *token);
 int8_t __function_get_operator_attribute(const char *token, OperatorAttribute attribute);
 
 
