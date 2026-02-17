@@ -3,8 +3,10 @@
 
 #include <zephyr/device.h>
 #include <zephyr/drivers/display.h>
+#include <zephyr/sys/printk.h>
 
 
+#include "function.h"
 #include "widgets/line/lv_line.h"
 #include "misc/lv_area.h"
 #include "misc/lv_style.h"
@@ -46,6 +48,23 @@ void graph_draw_axes(void) {
   /*
   * Draw axis ticks
   */
+  static lv_point_precise_t axis_xticks[19][2];
+  for (int16_t x = SCREEN_TICK_WIDTH_X, i = 0; x < SCREEN_WIDTH; x += SCREEN_TICK_WIDTH_X, i++) {
+    axis_xticks[i][0].x = x;
+    axis_xticks[i][0].y = SCREEN_Y_MID - 3;
+    axis_xticks[i][1].x = x;
+    axis_xticks[i][1].y = SCREEN_Y_MID + 3;
+    graph_draw_line(axis_xticks[i], 2, 0x000000);
+  }
+  static lv_point_precise_t axis_yticks[19][2];
+  for (int16_t y = SCREEN_TICK_WIDTH_Y, i = 0; y < SCREEN_HEIGHT; y += SCREEN_TICK_WIDTH_Y, i++) {
+    axis_yticks[i][0].x = SCREEN_X_MID - 3;
+    axis_yticks[i][0].y = y;
+    axis_yticks[i][1].x = SCREEN_X_MID + 3;
+    axis_yticks[i][1].y = y;
+    graph_draw_line(axis_yticks[i], 2, 0x000000);
+    printk("%d\n", y);
+  }
 }
 
 void graph_draw_function(Function *func) {
