@@ -60,7 +60,7 @@ void graph_draw_axes(void) {
     axis_xticks[i][0].x = x;
     axis_xticks[i][0].y = SCREEN_Y_MID - 3;
     axis_xticks[i][1].x = x;
-    axis_xticks[i][1].y = SCREEN_Y_MID + 3;
+    axis_xticks[i][1].y = SCREEN_Y_MID + 4;
     graph_draw_line(axis_xticks[i], 2, &axis_style);
     if (x == SCREEN_X_MID) x--;
   }
@@ -68,7 +68,7 @@ void graph_draw_axes(void) {
   for (int16_t y = 0, i = 0; y < SCREEN_HEIGHT; y += SCREEN_TICK_WIDTH_Y, i++) {
     axis_yticks[i][0].x = SCREEN_X_MID - 3;
     axis_yticks[i][0].y = y;
-    axis_yticks[i][1].x = SCREEN_X_MID + 3;
+    axis_yticks[i][1].x = SCREEN_X_MID + 4;
     axis_yticks[i][1].y = y;
     graph_draw_line(axis_yticks[i], 2, &axis_style);
     if (y == SCREEN_Y_MID) y--;
