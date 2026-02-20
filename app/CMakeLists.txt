@@ -6,6 +6,7 @@ target_sources(app PRIVATE src/main.c)
 target_sources(app PRIVATE src/function.c)
 target_sources(app PRIVATE src/stackf.c)
 target_sources(app PRIVATE src/graph_display.c)
+target_sources(app PRIVATE src/fsm.c)
 target_sources(app PRIVATE ../drivers/LED/led.c)
 target_sources(app PRIVATE ../drivers/BTN/btn.c)
 
