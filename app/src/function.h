@@ -25,6 +25,7 @@ typedef struct Function {
   float y[FUNCTION_NUM_POINTS];
   lv_point_precise_t points[FUNCTION_NUM_POINTS];
   lv_style_t style;
+  bool is_active;
 } Function;
 
 

@@ -1,12 +1,13 @@
 #include "fsm.h"
 
+#include <zephyr/kernel.h>
 #include <zephyr/smf.h>
 #include <zephyr/sys/printk.h>
 
 #include "function.h"
 #include "graph_display.h"
 
-#define FSM_DEBUG 0
+#define FSM_DEBUG 1
 
 #define MAX_FUNCTIONS 5
 #define MAX_FUNCTION_TOKENS 32
@@ -14,13 +15,18 @@ static Function functions[MAX_FUNCTIONS];
 FUNCTION_TOKEN_BUFFER(infix, MAX_FUNCTION_TOKENS);
 FUNCTION_TOKEN_BUFFER(postfix, MAX_FUNCTION_TOKENS);
 
+static void dead_state(void *o);
+
 static void setup_entry(void *o);
-static enum smf_state_result setup_run(void *o);
-static void setup_exit(void *o);
+
+static void draw_entry(void *o);
+static enum smf_state_result draw_run(void *o);
 
 
 enum fsm_state_def {
+  DEAD,
   SETUP,
+  DRAW,
 };
 
 typedef struct {
@@ -29,7 +35,9 @@ typedef struct {
 
 
 static const struct smf_state states[] = {
-  [SETUP] = SMF_CREATE_STATE(setup_entry, setup_run, setup_exit, NULL, NULL),
+  [DEAD] = SMF_CREATE_STATE(dead_state, NULL, NULL, NULL, NULL),
+  [SETUP] = SMF_CREATE_STATE(setup_entry, NULL, NULL, NULL, NULL),
+  [DRAW] = SMF_CREATE_STATE(draw_entry, draw_run, NULL, NULL, NULL),
 };
 
 static fsm_obj_t fsm_obj;
@@ -37,12 +45,7 @@ static fsm_obj_t fsm_obj;
 /*
 * Primary Functions
 */
-int8_t fsm_init(void) {
-  if (display_init() < 0) {
-    printk("display_init(): failed\n");
-    return -1;
-  }
-
+int8_t fsm_init(void) { 
   // FIXME TEMPORARY
   //strcpy(infix[0], "3");
   //strcpy(infix[1], "+");
@@ -103,10 +106,6 @@ int8_t fsm_init(void) {
     functions[1].y[i] = function_evaluate_postfix(postfix, x);
     x += X_INCREMENT;
   }
-   
-  graph_draw_axes();
-  graph_draw_function(&functions[0]);
-  graph_draw_function(&functions[1]);
   // END
 
   smf_set_initial(SMF_CTX(&fsm_obj), &states[SETUP]);
@@ -114,25 +113,51 @@ int8_t fsm_init(void) {
 }
 
 enum smf_state_result fsm_run(void) {
-  // FIXME TEMPORARY
-  display_timer_handler();
-  // END
-  
   return smf_run_state(SMF_CTX(&fsm_obj));
 }
 
 /*
 * State functions
 */
-static void setup_entry(void *o) {
-  return;
+static void dead_state(void *o) {
+#if FSM_DEBUG == 1
+  printk("State: DEAD\n");
+#endif
 }
 
-static enum smf_state_result setup_run(void *o) {
+static void setup_entry(void *o) {
+#if FSM_DEBUG == 1
+  printk("State: SETUP -> entry\n");
+#endif
+  if (display_init() < 0) {
+    printk("display_init(): failed\n");
+    smf_set_state(SMF_CTX(&fsm_obj), &states[DEAD]);
+    return;
+  }
+
+  for (uint8_t i = 0; i < MAX_FUNCTIONS; i++) {
+    functions[i].is_active = false;
+  }
+  smf_set_state(SMF_CTX(&fsm_obj), &states[DRAW]);
+}
+
+static void draw_entry(void *o) {
+#if FSM_DEBUG == 1
+  printk("State: DRAW -> entry\n");
+#endif
+
+  graph_draw_axes();
+  // FIXME No explicit active setting
+  functions[0].is_active = true;
+  functions[1].is_active = true;
+  for (uint8_t i = 0; i < MAX_FUNCTIONS; i++) {
+    if (functions[i].is_active) {
+      graph_draw_function(&functions[i]);
+    }
+  }
+}
+
+static enum smf_state_result draw_run(void *o) {
+  display_timer_handler();
   return SMF_EVENT_HANDLED;
 }
-
-static void setup_exit(void *o) {
-  return;
-}
-
