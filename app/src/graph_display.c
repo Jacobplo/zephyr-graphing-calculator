@@ -24,10 +24,16 @@ static lv_obj_t *screen = NULL;
 
 
 int8_t display_init(void) {
-  if(!device_is_ready(display_dev)) return -1;
+  if(!device_is_ready(display_dev)) {
+    printk("device_is_ready(): failed\n");
+    return -1;
+  }
 
   screen = lv_screen_active();
-  if(screen == NULL) return -1;
+  if(screen == NULL) {
+    printk("lv_screen_active(): failed\n");
+    return -1;
+  }
 
   display_blanking_off(display_dev);
 

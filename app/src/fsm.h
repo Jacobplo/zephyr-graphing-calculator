@@ -1,10 +1,9 @@
 #ifndef FSM_H_
 #define FSM_H_
 
-#include "zephyr/smf.h"
-#include <stdint.h>
+#include <zephyr/smf.h>
 
-void fsm_init(void);
+int8_t fsm_init(void);
 
 enum smf_state_result fsm_run(void);
 
