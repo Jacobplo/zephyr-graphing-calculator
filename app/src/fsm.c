@@ -215,7 +215,7 @@ static enum smf_state_result get_function_run(void *o) {
 
 static void get_function_exit(void *o) {
 #if FSM_DEBUG == 1
-  printk("State: DRAW -> exit\n");
+  printk("State: GET_FUNCTION -> exit\n");
 #endif
   // Convert the input buffer to the infix token buffer
   uint16_t i = 0;
