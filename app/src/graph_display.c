@@ -24,7 +24,7 @@
 static const struct device *display_dev = DEVICE_DT_GET(DT_CHOSEN(zephyr_display));
 static lv_obj_t *screen = NULL;
 
-static const uint32_t color_queue[NUM_COLORS] = { 0xff0000, 0x0000ff, 0x00ff00 };
+static const uint32_t color_queue[NUM_COLORS] = { 0xff0000, 0x0000ff, 0x000000, 0xcd34bd, 0x208520 };
 static uint8_t color_index = 0;
 
 int8_t display_init(void) {

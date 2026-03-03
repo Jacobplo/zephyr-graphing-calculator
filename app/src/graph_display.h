@@ -31,7 +31,7 @@
 #define SCREEN_X_COORD(i)       ((int)((i) * SCREEN_X_SCALER))
 #define SCREEN_Y_COORD(y)       ((int)(SCREEN_Y_MID + -1 * (y) * (SCREEN_HEIGHT / Y_SPAN))) 
 
-#define NUM_COLORS      3
+#define NUM_COLORS      5
 
 enum get_function_state {
   GET_FUNCTION_DRAW,
