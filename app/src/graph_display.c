@@ -119,6 +119,9 @@ void graph_draw_function(Function *func) {
 }
 
 void graph_draw_get_function(const char *text, enum get_function_state state) {
+  char display_text[TOKEN_MAX_LENGTH * 32] = {0};
+  snprintk(display_text, TOKEN_MAX_LENGTH * 32, "y = %s", text);
+
   static lv_obj_t *box_label;
 
   if (state == GET_FUNCTION_DRAW) {
@@ -135,12 +138,12 @@ void graph_draw_get_function(const char *text, enum get_function_state state) {
     lv_obj_add_style(box, &style, 0);
 
     box_label = lv_label_create(box);
-    lv_label_set_text(box_label, text);
+    lv_label_set_text(box_label, display_text);
     lv_obj_align(box_label, LV_ALIGN_CENTER, 0, 0);
   }
 
   else if (state == GET_FUNCTION_UPDATE) {
-    lv_label_set_text(box_label, text);
+    lv_label_set_text(box_label, display_text);
   }
 }
 

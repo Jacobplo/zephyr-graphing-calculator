@@ -202,12 +202,12 @@ static enum smf_state_result get_function_run(void *o) {
   if (BTN_check_clear_pressed(BTN0)) {
     smf_set_state(SMF_CTX(&fsm_obj), &states[DRAW]);
   }
-#endif
 
   if (BTN_check_clear_pressed(BTN1)) {
-    sprintf(input_buffer, "%s%s", input_buffer, "sin ( x )");
+    snprintk(input_buffer, MAX_FUNCTION_TOKENS * TOKEN_MAX_LENGTH,"%s%s", input_buffer, "sin ( x )");
     graph_draw_get_function(input_buffer, GET_FUNCTION_UPDATE); 
   }
+#endif 
 
   display_timer_handler();
   return SMF_EVENT_HANDLED;
