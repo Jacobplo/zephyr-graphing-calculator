@@ -33,12 +33,17 @@
 
 #define NUM_COLORS      3
 
+enum get_function_state {
+  GET_FUNCTION_DRAW,
+  GET_FUNCTION_UPDATE
+};
+
 int8_t display_init(void);
 void display_clean(void);
 
 void graph_draw_axes(void);
 void graph_draw_function(Function *func);
-void graph_draw_get_function(char *text);
+void graph_draw_get_function(const char *text, enum get_function_state state);
 void graph_draw_line(const lv_point_precise_t *points, size_t num_points, lv_style_t *style);
 
 static inline void display_timer_handler(void) {

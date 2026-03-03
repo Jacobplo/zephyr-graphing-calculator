@@ -17,6 +17,7 @@
 static Function functions[MAX_FUNCTIONS];
 FUNCTION_TOKEN_BUFFER(infix, MAX_FUNCTION_TOKENS);
 FUNCTION_TOKEN_BUFFER(postfix, MAX_FUNCTION_TOKENS);
+static char text_buffer[256];
 
 static void dead_state(void *o);
 
@@ -188,7 +189,9 @@ static void get_function_entry(void *o) {
   printk("State: GET_FUNCTION -> entry\n"); 
 #endif
 
-  graph_draw_get_function("y = "); 
+  snprintf(text_buffer, 5, "y = ");
+
+  graph_draw_get_function(text_buffer, GET_FUNCTION_DRAW);
 }
 
 static enum smf_state_result get_function_run(void *o) {
@@ -197,14 +200,12 @@ static enum smf_state_result get_function_run(void *o) {
     smf_set_state(SMF_CTX(&fsm_obj), &states[DRAW]);
   }
 #endif
+
+  if (BTN_check_clear_pressed(BTN1)) {
+    sprintf(text_buffer, "%s %s", text_buffer, "test");
+    graph_draw_get_function(text_buffer, GET_FUNCTION_UPDATE); 
+  }
+
   display_timer_handler();
-
-  static char input_text[256] = { 'y', ' ', '=', ' ' };
-  sprintf(input_text, "%s %s", input_text, "test");
-
-  graph_draw_get_function(input_text);
- 
-  k_msleep(1000);
-
   return SMF_EVENT_HANDLED;
 }

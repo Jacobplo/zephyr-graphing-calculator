@@ -45,6 +45,7 @@ int8_t display_init(void) {
 }
 
 void display_clean(void) {
+  display_timer_handler();
   lv_obj_clean(screen);
   color_index = 0;
 }
@@ -117,23 +118,30 @@ void graph_draw_function(Function *func) {
   }
 }
 
-void graph_draw_get_function(char *text) {
-  static lv_point_precise_t points[2] = { { 0, 15 }, { SCREEN_WIDTH, 15 } };
-
-  static lv_style_t style;
-  lv_style_init(&style);
-  lv_style_set_line_width(&style, 30);
-  lv_style_set_line_color(&style, lv_color_hex(0x878787));
-
-  static lv_obj_t *box;
-  box = lv_line_create(screen);
-  lv_line_set_points(box, points, 2);
-  lv_obj_add_style(box, &style, 0);
-
+void graph_draw_get_function(const char *text, enum get_function_state state) {
   static lv_obj_t *box_label;
-  box_label = lv_label_create(box);
-  lv_label_set_text_static(box_label, text);
-  lv_obj_align(box_label, LV_ALIGN_CENTER, 0, 0);
+
+  if (state == GET_FUNCTION_DRAW) {
+    static lv_point_precise_t points[2] = { { 0, 15 }, { SCREEN_WIDTH, 15 } };
+
+    static lv_style_t style;
+    lv_style_init(&style);
+    lv_style_set_line_width(&style, 30);
+    lv_style_set_line_color(&style, lv_color_hex(0x878787));
+
+    static lv_obj_t *box;
+    box = lv_line_create(screen);
+    lv_line_set_points(box, points, 2);
+    lv_obj_add_style(box, &style, 0);
+
+    box_label = lv_label_create(box);
+    lv_label_set_text(box_label, text);
+    lv_obj_align(box_label, LV_ALIGN_CENTER, 0, 0);
+  }
+
+  else if (state == GET_FUNCTION_UPDATE) {
+    lv_label_set_text(box_label, text);
+  }
 }
 
 void graph_draw_line(const lv_point_precise_t *points, size_t num_points, lv_style_t *style) {
@@ -141,3 +149,4 @@ void graph_draw_line(const lv_point_precise_t *points, size_t num_points, lv_sty
   lv_line_set_points(line, points, num_points);
   lv_obj_add_style(line, style, 0);
 }
+
