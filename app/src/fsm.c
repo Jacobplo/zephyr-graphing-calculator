@@ -238,7 +238,7 @@ static void get_function_exit(void *o) {
   // Evaluate the infix token buffer as a new function
   for (uint8_t j = 0; j < MAX_FUNCTIONS; j++) {
     if (!functions[j].is_active) {
-      function_infix_to_postfix(infix, postfix, MAX_FUNCTION_TOKENS);
+      if (function_infix_to_postfix(infix, postfix, MAX_FUNCTION_TOKENS) < 0) break;
       float x = X_MIN;
       for (uint16_t k = 0; k < FUNCTION_NUM_POINTS; k++) {
         functions[j].x[k] = x;
@@ -258,7 +258,6 @@ static void delete_entry(void *o) {
   uint8_t i = 0;
   while (i < MAX_FUNCTIONS && functions[i].is_active) i++;
   functions[i - 1].is_active = false;
-  printk("%d\n", i);
   
   smf_set_state(SMF_CTX(&fsm_obj), &states[DRAW]);
 }

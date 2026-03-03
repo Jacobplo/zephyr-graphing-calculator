@@ -57,7 +57,7 @@ int8_t function_infix_to_postfix(char (*infix)[TOKEN_MAX_LENGTH], char (*postfix
     char *token = *infix;
     TokenType token_type = __function_get_token_type(token);
 
-    if(token_type == TOKEN_NONE) return 0;  // Fails if token is not a valid type.
+    if(token_type == TOKEN_NONE) return -1;  // Fails if token is not a valid type.
 
     // Case for if token is a float literal or constant.
     if(token_type == TOKEN_LITERAL || token_type == TOKEN_CONSTANT || token_type == TOKEN_X) {
@@ -97,7 +97,7 @@ int8_t function_infix_to_postfix(char (*infix)[TOKEN_MAX_LENGTH], char (*postfix
       {
         // Mismatched parentheses
         if(ostack_peek(&operator_stack, operator_stack_element_buffer) == NULL) {
-          return 0;
+          return -1;
         }
         ostack_pop(&operator_stack, *postfix);
         postfix++;
@@ -106,7 +106,7 @@ int8_t function_infix_to_postfix(char (*infix)[TOKEN_MAX_LENGTH], char (*postfix
       if(ostack_peek(&operator_stack, operator_stack_element_buffer) != NULL &&
          strncmp(operator_stack_element_buffer, "(", TOKEN_MAX_LENGTH - 1))
       {
-          return 0;
+          return -1;
       } 
       ostack_pop(&operator_stack, operator_stack_element_buffer); // Discard left parentheses.
       if(ostack_peek(&operator_stack, operator_stack_element_buffer) != NULL &&
@@ -125,7 +125,7 @@ int8_t function_infix_to_postfix(char (*infix)[TOKEN_MAX_LENGTH], char (*postfix
   while(ostack_peek(&operator_stack, operator_stack_element_buffer) != NULL) {
     // Mismatched parentheses.
     if(!strncmp(operator_stack_element_buffer, "(", TOKEN_MAX_LENGTH - 1)) {
-      return 0;
+      return -1;
     }
     
     ostack_pop(&operator_stack, *postfix);
@@ -136,7 +136,7 @@ int8_t function_infix_to_postfix(char (*infix)[TOKEN_MAX_LENGTH], char (*postfix
   // Ensures the final token of each postfix expression is known.
   (*postfix)[0] = '\0';
   
-  return 1;
+  return 0;
 }
 
 
