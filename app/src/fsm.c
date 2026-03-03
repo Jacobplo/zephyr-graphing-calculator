@@ -31,12 +31,15 @@ static void get_function_entry(void *o);
 static enum smf_state_result get_function_run(void *o);
 static void get_function_exit(void *o);
 
+static void delete_entry(void *o);
+
 
 enum fsm_state_def {
   DEAD,
   SETUP,
   DRAW,
   GET_FUNCTION,
+  DELETE,
 };
 
 typedef struct {
@@ -49,6 +52,7 @@ static const struct smf_state states[] = {
   [SETUP] = SMF_CREATE_STATE(setup_entry, NULL, NULL, NULL, NULL),
   [DRAW] = SMF_CREATE_STATE(draw_entry, draw_run, NULL, NULL, NULL),
   [GET_FUNCTION] = SMF_CREATE_STATE(get_function_entry, get_function_run, get_function_exit, NULL, NULL),
+  [DELETE] = SMF_CREATE_STATE(delete_entry, NULL, NULL, NULL, NULL),
 };
 
 static fsm_obj_t fsm_obj;
@@ -180,6 +184,10 @@ static enum smf_state_result draw_run(void *o) {
   if (BTN_check_clear_pressed(BTN0)) {
     smf_set_state(SMF_CTX(&fsm_obj), &states[GET_FUNCTION]);
   }
+
+  if (BTN_check_clear_pressed(BTN1)) {
+    smf_set_state(SMF_CTX(&fsm_obj), &states[DELETE]);
+  }
 #endif
   display_timer_handler(); 
 
@@ -241,4 +249,16 @@ static void get_function_exit(void *o) {
       break;
     }
   }
+}
+
+static void delete_entry(void *o) {
+#if FSM_DEBUG == 1
+  printk("State: DELETE -> entry\n");
+#endif
+  uint8_t i = 0;
+  while (i < MAX_FUNCTIONS && functions[i].is_active) i++;
+  functions[i - 1].is_active = false;
+  printk("%d\n", i);
+  
+  smf_set_state(SMF_CTX(&fsm_obj), &states[DRAW]);
 }
