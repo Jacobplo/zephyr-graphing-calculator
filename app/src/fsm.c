@@ -198,8 +198,6 @@ static void get_function_entry(void *o) {
 #if FSM_DEBUG == 1
   printk("State: GET_FUNCTION -> entry\n"); 
 #endif
-
-  //snprintf(input_buffer, 5, "y = ");
   input_buffer[0] = '\0';
 
   graph_draw_get_function(input_buffer, GET_FUNCTION_DRAW);
