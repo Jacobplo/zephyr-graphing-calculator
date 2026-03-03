@@ -4,8 +4,11 @@
 #include <zephyr/smf.h>
 #include <zephyr/sys/printk.h>
 
+#include <stdio.h>
+
 #include "function.h"
 #include "graph_display.h"
+#include "BTN.h"
 
 #define FSM_DEBUG 1
 
@@ -22,11 +25,15 @@ static void setup_entry(void *o);
 static void draw_entry(void *o);
 static enum smf_state_result draw_run(void *o);
 
+static void get_function_entry(void *o);
+static enum smf_state_result get_function_run(void *o);
+
 
 enum fsm_state_def {
   DEAD,
   SETUP,
   DRAW,
+  GET_FUNCTION,
 };
 
 typedef struct {
@@ -38,6 +45,7 @@ static const struct smf_state states[] = {
   [DEAD] = SMF_CREATE_STATE(dead_state, NULL, NULL, NULL, NULL),
   [SETUP] = SMF_CREATE_STATE(setup_entry, NULL, NULL, NULL, NULL),
   [DRAW] = SMF_CREATE_STATE(draw_entry, draw_run, NULL, NULL, NULL),
+  [GET_FUNCTION] = SMF_CREATE_STATE(get_function_entry, get_function_run, NULL, NULL, NULL),
 };
 
 static fsm_obj_t fsm_obj;
@@ -128,9 +136,15 @@ static void dead_state(void *o) {
 static void setup_entry(void *o) {
 #if FSM_DEBUG == 1
   printk("State: SETUP -> entry\n");
+  
+  // Init on-board button for debugging purposes
+  if (BTN_init() < 0) {
+    printk("BTN_init(): failed at line %d in %s\n", __LINE__, __FILE__);
+  }
 #endif
+  // Initialize display and screen
   if (display_init() < 0) {
-    printk("display_init(): failed\n");
+    printk("display_init(): failed at line %d in %s\n", __LINE__, __FILE__);
     smf_set_state(SMF_CTX(&fsm_obj), &states[DEAD]);
     return;
   }
@@ -145,6 +159,7 @@ static void draw_entry(void *o) {
 #if FSM_DEBUG == 1
   printk("State: DRAW -> entry\n");
 #endif
+  display_clean();
 
   graph_draw_axes();
   // FIXME No explicit active setting
@@ -158,6 +173,38 @@ static void draw_entry(void *o) {
 }
 
 static enum smf_state_result draw_run(void *o) {
+#if FSM_DEBUG == 1
+  if (BTN_check_clear_pressed(BTN0)) {
+    smf_set_state(SMF_CTX(&fsm_obj), &states[GET_FUNCTION]);
+  }
+#endif
+  display_timer_handler(); 
+
+  return SMF_EVENT_HANDLED;
+}
+
+static void get_function_entry(void *o) {
+#if FSM_DEBUG == 1
+  printk("State: GET_FUNCTION -> entry\n"); 
+#endif
+
+  graph_draw_get_function("y = "); 
+}
+
+static enum smf_state_result get_function_run(void *o) {
+#if FSM_DEBUG == 1
+  if (BTN_check_clear_pressed(BTN0)) {
+    smf_set_state(SMF_CTX(&fsm_obj), &states[DRAW]);
+  }
+#endif
   display_timer_handler();
+
+  static char input_text[256] = { 'y', ' ', '=', ' ' };
+  sprintf(input_text, "%s %s", input_text, "test");
+
+  graph_draw_get_function(input_text);
+ 
+  k_msleep(1000);
+
   return SMF_EVENT_HANDLED;
 }

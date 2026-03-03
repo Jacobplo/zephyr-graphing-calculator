@@ -1,4 +1,5 @@
 #include "graph_display.h"
+#include "core/lv_obj_pos.h"
 #include "core/lv_obj_style.h"
 
 #include <zephyr/device.h>
@@ -9,6 +10,7 @@
 #include "function.h"
 #include "misc/lv_color.h"
 #include "misc/lv_palette.h"
+#include "widgets/label/lv_label.h"
 #include "widgets/line/lv_line.h"
 #include "misc/lv_area.h"
 #include "misc/lv_style.h"
@@ -22,6 +24,8 @@
 static const struct device *display_dev = DEVICE_DT_GET(DT_CHOSEN(zephyr_display));
 static lv_obj_t *screen = NULL;
 
+static const uint32_t color_queue[NUM_COLORS] = { 0xff0000, 0x0000ff, 0x00ff00 };
+static uint8_t color_index = 0;
 
 int8_t display_init(void) {
   if(!device_is_ready(display_dev)) {
@@ -38,6 +42,11 @@ int8_t display_init(void) {
   display_blanking_off(display_dev);
 
   return 0;
+}
+
+void display_clean(void) {
+  lv_obj_clean(screen);
+  color_index = 0;
 }
 
 void graph_draw_axes(void) {
@@ -81,10 +90,7 @@ void graph_draw_axes(void) {
   }
 }
 
-void graph_draw_function(Function *func) {
-  static const uint32_t color_queue[NUM_COLORS] = { 0xff0000, 0x0000ff, 0x00ff00 };
-  static uint8_t color_index = 0;
-
+void graph_draw_function(Function *func) { 
   lv_style_init(&func->style);
   lv_style_set_line_width(&func->style, 2);
   lv_style_set_line_color(&func->style, lv_color_hex(color_queue[color_index]));
@@ -111,9 +117,27 @@ void graph_draw_function(Function *func) {
   }
 }
 
+void graph_draw_get_function(char *text) {
+  static lv_point_precise_t points[2] = { { 0, 15 }, { SCREEN_WIDTH, 15 } };
+
+  static lv_style_t style;
+  lv_style_init(&style);
+  lv_style_set_line_width(&style, 30);
+  lv_style_set_line_color(&style, lv_color_hex(0x878787));
+
+  static lv_obj_t *box;
+  box = lv_line_create(screen);
+  lv_line_set_points(box, points, 2);
+  lv_obj_add_style(box, &style, 0);
+
+  static lv_obj_t *box_label;
+  box_label = lv_label_create(box);
+  lv_label_set_text_static(box_label, text);
+  lv_obj_align(box_label, LV_ALIGN_CENTER, 0, 0);
+}
+
 void graph_draw_line(const lv_point_precise_t *points, size_t num_points, lv_style_t *style) {
   lv_obj_t *line = lv_line_create(screen);
   lv_line_set_points(line, points, num_points);
   lv_obj_add_style(line, style, 0);
 }
-
