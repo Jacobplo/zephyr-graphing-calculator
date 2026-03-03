@@ -1,5 +1,6 @@
 #include "fsm.h"
 
+#include <string.h>
 #include <zephyr/kernel.h>
 #include <zephyr/smf.h>
 #include <zephyr/sys/printk.h>
@@ -17,7 +18,7 @@
 static Function functions[MAX_FUNCTIONS];
 FUNCTION_TOKEN_BUFFER(infix, MAX_FUNCTION_TOKENS);
 FUNCTION_TOKEN_BUFFER(postfix, MAX_FUNCTION_TOKENS);
-static char text_buffer[256];
+static char input_buffer[MAX_FUNCTION_TOKENS * TOKEN_MAX_LENGTH];
 
 static void dead_state(void *o);
 
@@ -28,6 +29,7 @@ static enum smf_state_result draw_run(void *o);
 
 static void get_function_entry(void *o);
 static enum smf_state_result get_function_run(void *o);
+static void get_function_exit(void *o);
 
 
 enum fsm_state_def {
@@ -46,7 +48,7 @@ static const struct smf_state states[] = {
   [DEAD] = SMF_CREATE_STATE(dead_state, NULL, NULL, NULL, NULL),
   [SETUP] = SMF_CREATE_STATE(setup_entry, NULL, NULL, NULL, NULL),
   [DRAW] = SMF_CREATE_STATE(draw_entry, draw_run, NULL, NULL, NULL),
-  [GET_FUNCTION] = SMF_CREATE_STATE(get_function_entry, get_function_run, NULL, NULL, NULL),
+  [GET_FUNCTION] = SMF_CREATE_STATE(get_function_entry, get_function_run, get_function_exit, NULL, NULL),
 };
 
 static fsm_obj_t fsm_obj;
@@ -189,9 +191,10 @@ static void get_function_entry(void *o) {
   printk("State: GET_FUNCTION -> entry\n"); 
 #endif
 
-  snprintf(text_buffer, 5, "y = ");
+  //snprintf(input_buffer, 5, "y = ");
+  input_buffer[0] = '\0';
 
-  graph_draw_get_function(text_buffer, GET_FUNCTION_DRAW);
+  graph_draw_get_function(input_buffer, GET_FUNCTION_DRAW);
 }
 
 static enum smf_state_result get_function_run(void *o) {
@@ -202,10 +205,40 @@ static enum smf_state_result get_function_run(void *o) {
 #endif
 
   if (BTN_check_clear_pressed(BTN1)) {
-    sprintf(text_buffer, "%s %s", text_buffer, "test");
-    graph_draw_get_function(text_buffer, GET_FUNCTION_UPDATE); 
+    sprintf(input_buffer, "%s%s", input_buffer, "sin ( x )");
+    graph_draw_get_function(input_buffer, GET_FUNCTION_UPDATE); 
   }
 
   display_timer_handler();
   return SMF_EVENT_HANDLED;
+}
+
+static void get_function_exit(void *o) {
+#if FSM_DEBUG == 1
+  printk("State: DRAW -> exit\n");
+#endif
+  // Convert the input buffer to the infix token buffer
+  uint16_t i = 0;
+  char* token = strtok(input_buffer, " ");
+  while (token) {
+    strcpy(infix[i], token);
+    token = strtok(NULL, " ");
+    i++;
+  }
+  infix[i][0] = '\0';
+
+  // Evaluate the infix token buffer as a new function
+  for (uint8_t j = 0; j < MAX_FUNCTIONS; j++) {
+    if (!functions[j].is_active) {
+      function_infix_to_postfix(infix, postfix, MAX_FUNCTION_TOKENS);
+      float x = X_MIN;
+      for (uint16_t k = 0; k < FUNCTION_NUM_POINTS; k++) {
+        functions[j].x[k] = x;
+        functions[j].y[k] = function_evaluate_postfix(postfix, x);
+        x += X_INCREMENT;
+      }    
+      functions[j].is_active = true;
+      break;
+    }
+  }
 }
