@@ -139,7 +139,9 @@ void graph_draw_get_function(const char *text, enum get_function_state state) {
 
     box_label = lv_label_create(box);
     lv_label_set_text(box_label, display_text);
-    lv_obj_align(box_label, LV_ALIGN_CENTER, 0, 0);
+    lv_label_set_long_mode(box_label, LV_LABEL_LONG_MODE_WRAP);
+    lv_obj_set_width(box_label, SCREEN_WIDTH - 20);
+    lv_obj_align(box_label, LV_ALIGN_TOP_LEFT, 0, 0); 
   }
 
   else if (state == GET_FUNCTION_UPDATE) {
