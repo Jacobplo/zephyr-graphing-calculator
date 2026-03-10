@@ -3,6 +3,7 @@
 #include <string.h>
 #include <zephyr/kernel.h>
 #include <zephyr/smf.h>
+#include <zephyr/drivers/gpio.h>
 #include <zephyr/sys/printk.h>
 
 #include <stdio.h>
@@ -19,6 +20,15 @@ static Function functions[MAX_FUNCTIONS];
 FUNCTION_TOKEN_BUFFER(infix, MAX_FUNCTION_TOKENS);
 FUNCTION_TOKEN_BUFFER(postfix, MAX_FUNCTION_TOKENS);
 static char input_buffer[MAX_FUNCTION_TOKENS * TOKEN_MAX_LENGTH];
+
+
+#define NUM_ROWS 4
+#define NUM_COLS 8
+#define ZEPHYR_USER_NODE DT_PATH(zephyr_user)
+#define GPIO(id, idx) GPIO_DT_SPEC_GET_BY_IDX(ZEPHYR_USER_NODE, id, idx)
+static const struct gpio_dt_spec row[NUM_ROWS] = { GPIO(row_gpios, 0), GPIO(row_gpios, 1), GPIO(row_gpios, 2), GPIO(row_gpios, 3) };
+static const struct gpio_dt_spec col[NUM_COLS] = { GPIO(col_gpios, 0), GPIO(col_gpios, 1), GPIO(col_gpios, 2), GPIO(col_gpios, 3), GPIO(col_gpios, 4), GPIO(col_gpios, 5), GPIO(col_gpios, 6), GPIO(col_gpios, 7) };
+
 
 static void dead_state(void *o);
 
@@ -149,6 +159,33 @@ static void setup_entry(void *o) {
     printk("BTN_init(): failed at line %d in %s\n", __LINE__, __FILE__);
   }
 #endif
+  // Initialize GPIO
+  for (uint8_t i = 0; i < NUM_ROWS; i++) {
+    if (!gpio_is_ready_dt(&row[i])) {
+      printk("gpio_is_read_dt(): failed at line %d in %s\n", __LINE__, __FILE__);
+      smf_set_state(SMF_CTX(&fsm_obj), &states[DEAD]);
+      return;
+    }
+
+    if (gpio_pin_configure_dt(&row[i], GPIO_OUTPUT_LOW)) {
+      printk("gpio_pin_configure_dt(): failed at line %d in %s\n", __LINE__, __FILE__);
+      smf_set_state(SMF_CTX(&fsm_obj), &states[DEAD]);
+      return;
+    }
+  }
+  for (uint8_t i = 0; i < NUM_COLS; i++) {
+    if (!gpio_is_ready_dt(&col[i])) {
+      printk("gpio_is_read_dt(): failed at line %d in %s\n", __LINE__, __FILE__);
+      smf_set_state(SMF_CTX(&fsm_obj), &states[DEAD]);
+      return;
+    }
+    if (gpio_pin_configure_dt(&col[i], GPIO_INPUT)) {
+      printk("gpio_pin_configure_dt(): failed at line %d in %s\n", __LINE__, __FILE__);
+      smf_set_state(SMF_CTX(&fsm_obj), &states[DEAD]);
+      return;
+    } 
+  }
+
   // Initialize display and screen
   if (display_init() < 0) {
     printk("display_init(): failed at line %d in %s\n", __LINE__, __FILE__);

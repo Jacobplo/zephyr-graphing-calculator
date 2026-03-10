@@ -8,7 +8,7 @@
 
 #define SLEEP_MS 1
 
-int main(void) { 
+int main(void) {
   if (fsm_init() < 0) {
     printk("fsm_init(): failed\n");
   }
