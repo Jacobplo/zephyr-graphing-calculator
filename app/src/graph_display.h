@@ -32,6 +32,12 @@
 #define SCREEN_Y_COORD(y)       ((int)(SCREEN_Y_MID + -1 * (y) * (SCREEN_HEIGHT / Y_SPAN))) 
 
 #define NUM_COLORS      5
+#define COLOR_BLUE        0xff0000
+#define COLOR_RED         0x0000ff
+#define COLOR_BLACK       0x000000
+#define COLOR_MAGENTA     0xcd34bd
+#define COLOR_GREEN       0x208520
+#define COLOR_LIGHT_GRAY  0x878787
 
 enum get_function_state {
   GET_FUNCTION_DRAW,

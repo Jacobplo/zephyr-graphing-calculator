@@ -24,7 +24,7 @@
 static const struct device *display_dev = DEVICE_DT_GET(DT_CHOSEN(zephyr_display));
 static lv_obj_t *screen = NULL;
 
-static const uint32_t color_queue[NUM_COLORS] = { 0xff0000, 0x0000ff, 0x000000, 0xcd34bd, 0x208520 };
+static const uint32_t color_queue[NUM_COLORS] = { COLOR_BLUE, COLOR_RED, COLOR_BLACK, COLOR_MAGENTA, COLOR_GREEN };
 static uint8_t color_index = 0;
 
 int8_t display_init(void) {
@@ -54,7 +54,7 @@ void graph_draw_axes(void) {
   static lv_style_t axis_style;
   lv_style_init(&axis_style);
   lv_style_set_line_width(&axis_style, 1);
-  lv_style_set_line_color(&axis_style, lv_color_hex(0x000000));
+  lv_style_set_line_color(&axis_style, lv_color_hex(COLOR_BLACK));
   
   /*
   * Draw axis main lines
@@ -130,7 +130,7 @@ void graph_draw_get_function(const char *text, enum get_function_state state) {
     static lv_style_t style;
     lv_style_init(&style);
     lv_style_set_line_width(&style, 30);
-    lv_style_set_line_color(&style, lv_color_hex(0x878787));
+    lv_style_set_line_color(&style, lv_color_hex(COLOR_LIGHT_GRAY));
 
     static lv_obj_t *box;
     box = lv_line_create(screen);
