@@ -12,7 +12,7 @@
 #include "graph_display.h"
 #include "BTN.h"
 
-#define FSM_DEBUG 1
+#define FSM_DEBUG 0
 
 #define MAX_FUNCTIONS 5
 #define MAX_FUNCTION_TOKENS 32
@@ -23,11 +23,62 @@ static char input_buffer[MAX_FUNCTION_TOKENS * TOKEN_MAX_LENGTH];
 
 
 #define NUM_ROWS 4
-#define NUM_COLS 8
+#define NUM_COLS 7
 #define ZEPHYR_USER_NODE DT_PATH(zephyr_user)
 #define GPIO(id, idx) GPIO_DT_SPEC_GET_BY_IDX(ZEPHYR_USER_NODE, id, idx)
 static const struct gpio_dt_spec row[NUM_ROWS] = { GPIO(row_gpios, 0), GPIO(row_gpios, 1), GPIO(row_gpios, 2), GPIO(row_gpios, 3) };
-static const struct gpio_dt_spec col[NUM_COLS] = { GPIO(col_gpios, 0), GPIO(col_gpios, 1), GPIO(col_gpios, 2), GPIO(col_gpios, 3), GPIO(col_gpios, 4), GPIO(col_gpios, 5), GPIO(col_gpios, 6), GPIO(col_gpios, 7) };
+static const struct gpio_dt_spec col[NUM_COLS] = { GPIO(col_gpios, 0), GPIO(col_gpios, 1), GPIO(col_gpios, 2), GPIO(col_gpios, 3), GPIO(col_gpios, 4), GPIO(col_gpios, 5), GPIO(col_gpios, 6)};
+
+enum key {
+  KEY_0, KEY_1, KEY_2,
+  KEY_3, KEY_4, KEY_5,
+  KEY_6, KEY_7, KEY_8,
+  KEY_9, KEY_NEG, KEY_DOT,
+  KEY_SIN, KEY_COS, KEY_TAN,
+  KEY_RB, KEY_LB, KEY_ADD,
+  KEY_MIN, KEY_MUL, KEY_DIV,
+  KEY_X, KEY_PI, KEY_E,
+  KEY_POW, KEY_LN, KEY_SQRT,
+  KEY_ABS, KEY_DEL, KEY_GET
+};
+static const char *key_map[] = {
+  [KEY_0] = "0",
+  [KEY_1] = "1",
+  [KEY_2] = "2",
+  [KEY_3] = "3",
+  [KEY_4] = "4",
+  [KEY_5] = "5",
+  [KEY_6] = "6",
+  [KEY_7] = "7",
+  [KEY_8] = "8",
+  [KEY_9] = "9",
+  [KEY_NEG] = "-",
+  [KEY_DOT] = ".",
+  [KEY_SIN] = "sin",
+  [KEY_COS] = "cos",
+  [KEY_TAN] = "tan",
+  [KEY_RB] = ")",
+  [KEY_LB] = "(",
+  [KEY_ADD] = "+",
+  [KEY_MIN] = "-",
+  [KEY_MUL] = "*",
+  [KEY_DIV] = "/",
+  [KEY_X] = "x",
+  [KEY_PI] = "pi",
+  [KEY_E] = "e",
+  [KEY_POW] = "^",
+  [KEY_LN] = "ln",
+  [KEY_SQRT] = "sqrt",
+  [KEY_ABS] = "abs",
+};
+
+static uint8_t keys[NUM_ROWS][NUM_COLS] = {
+  {KEY_7, KEY_8,   KEY_9,   KEY_DIV, KEY_POW, KEY_SIN, KEY_GET },
+  {KEY_4, KEY_5,   KEY_6,   KEY_MUL, KEY_LB , KEY_COS, KEY_DEL },
+  {KEY_1, KEY_2,   KEY_3,   KEY_MIN, KEY_RB , KEY_TAN, KEY_SQRT},
+  {KEY_0, KEY_DOT, KEY_NEG, KEY_ADD, KEY_X  , KEY_LN , KEY_E   },
+};
+static enum key key = -1;
 
 
 static void dead_state(void *o);
@@ -42,6 +93,9 @@ static enum smf_state_result get_function_run(void *o);
 static void get_function_exit(void *o);
 
 static void delete_entry(void *o);
+
+static void select_row(uint8_t row_num);
+static enum key get_key();
 
 
 enum fsm_state_def {
@@ -167,7 +221,7 @@ static void setup_entry(void *o) {
       return;
     }
 
-    if (gpio_pin_configure_dt(&row[i], GPIO_OUTPUT_LOW)) {
+    if (gpio_pin_configure_dt(&row[i], GPIO_OUTPUT_HIGH)) {
       printk("gpio_pin_configure_dt(): failed at line %d in %s\n", __LINE__, __FILE__);
       smf_set_state(SMF_CTX(&fsm_obj), &states[DEAD]);
       return;
@@ -226,6 +280,19 @@ static enum smf_state_result draw_run(void *o) {
     smf_set_state(SMF_CTX(&fsm_obj), &states[DELETE]);
   }
 #endif
+  //enum key test = get_key();
+  //if (test != 255) {
+  //  printk("%d\n", test);
+  //}
+  
+  key = get_key();
+  if (key == KEY_GET) {
+    smf_set_state(SMF_CTX(&fsm_obj), &states[GET_FUNCTION]);
+  }
+  else if (key == KEY_DEL) {
+    smf_set_state(SMF_CTX(&fsm_obj), &states[DELETE]);
+  }
+
   display_timer_handler(); 
 
   return SMF_EVENT_HANDLED;
@@ -250,7 +317,35 @@ static enum smf_state_result get_function_run(void *o) {
     snprintk(input_buffer, MAX_FUNCTION_TOKENS * TOKEN_MAX_LENGTH,"%s%s", input_buffer, "sin ( x )");
     graph_draw_get_function(input_buffer, GET_FUNCTION_UPDATE); 
   }
+
 #endif 
+
+  key = get_key();
+  if (key != 255) {
+    printk("%d\n", key);
+  }
+
+  static bool prev_is_digit = true;
+
+  if (key >= KEY_0 && key <= KEY_DOT) { 
+    if (!prev_is_digit) {
+      snprintk(input_buffer, MAX_FUNCTION_TOKENS * TOKEN_MAX_LENGTH,"%s%s", input_buffer, " ");
+    }
+    snprintk(input_buffer, MAX_FUNCTION_TOKENS * TOKEN_MAX_LENGTH,"%s%s", input_buffer, key_map[key]);
+
+    prev_is_digit = true;
+    graph_draw_get_function(input_buffer, GET_FUNCTION_UPDATE); 
+  }
+  else if (key != 255 && key != KEY_DEL && key != KEY_GET) {
+    snprintk(input_buffer, MAX_FUNCTION_TOKENS * TOKEN_MAX_LENGTH,"%s%s", input_buffer, " ");
+    snprintk(input_buffer, MAX_FUNCTION_TOKENS * TOKEN_MAX_LENGTH,"%s%s", input_buffer, key_map[key]);
+    prev_is_digit = false;
+    graph_draw_get_function(input_buffer, GET_FUNCTION_UPDATE); 
+  } 
+  else if (key == KEY_GET) {
+    smf_set_state(SMF_CTX(&fsm_obj), &states[DRAW]); 
+  }
+
 
   display_timer_handler();
   return SMF_EVENT_HANDLED;
@@ -295,4 +390,40 @@ static void delete_entry(void *o) {
   functions[i - 1].is_active = false;
   
   smf_set_state(SMF_CTX(&fsm_obj), &states[DRAW]);
+}
+
+/*
+* Keyboard Functions
+*/
+static void select_row(uint8_t row_num) {
+  // Reset previous row to floating
+  gpio_pin_configure_dt(&row[(row_num - 1 + NUM_ROWS) % NUM_ROWS], GPIO_OUTPUT_HIGH);
+
+  // Set selected row to HIGH
+  gpio_pin_configure_dt(&row[row_num], GPIO_OUTPUT_LOW);
+}
+
+static enum key get_key() {
+  static bool lifted = true;
+  static bool pressed = false;
+  k_msleep(10);
+  for(int8_t i = 0; i < NUM_ROWS; i++) {
+    select_row(i);
+    k_msleep(10);
+    for(int8_t j = 0; j < NUM_COLS; j++) {
+      if(gpio_pin_get_dt(&col[j])) {
+        pressed = true;
+        if (lifted) { 
+          lifted = false;
+          return keys[i][j];
+        }
+      } 
+    }
+  }
+  if (!pressed) {
+    lifted = true;
+  }
+  pressed = false;
+
+  return -1;
 }
