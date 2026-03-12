@@ -80,7 +80,7 @@ static uint8_t keys[NUM_ROWS][NUM_COLS] = {
   {KEY_1, KEY_2,   KEY_3,   KEY_MIN, KEY_RB , KEY_TAN, KEY_SQRT},
   {KEY_0, KEY_DOT, KEY_NEG, KEY_ADD, KEY_X  , KEY_LN , KEY_E   },
 };
-static enum key key = -1;
+static enum key key = KEY_NONE;
 
 
 static void dead_state(void *o);
@@ -267,7 +267,7 @@ static enum smf_state_result get_function_run(void *o) {
   cur_len = 0;
   STACKF_INIT(len_stack);
 
-
+  // Case for inputting a literal.
   if (key >= KEY_0 && key <= KEY_DOT) { 
     if (!prev_is_digit) {
       snprintk(input_buffer, MAX_FUNCTION_TOKENS * TOKEN_MAX_LENGTH,"%s%s", input_buffer, " ");
@@ -279,6 +279,7 @@ static enum smf_state_result get_function_run(void *o) {
     prev_is_digit = true;
     graph_draw_get_function(input_buffer, GET_FUNCTION_UPDATE); 
   }
+  // Case for other input keys. 
   else if (key != KEY_NONE && key != KEY_DEL && key != KEY_GET) {
     snprintk(input_buffer, MAX_FUNCTION_TOKENS * TOKEN_MAX_LENGTH,"%s%s", input_buffer, " ");
     snprintk(input_buffer, MAX_FUNCTION_TOKENS * TOKEN_MAX_LENGTH,"%s%s", input_buffer, key_map[key]);
@@ -287,10 +288,12 @@ static enum smf_state_result get_function_run(void *o) {
     prev_is_digit = false;
     graph_draw_get_function(input_buffer, GET_FUNCTION_UPDATE); 
   } 
+  // Case for deleting last input.
   else if (key == KEY_DEL && (int)stackf_peek(&len_stack) != 0) {
     input_buffer[strlen(input_buffer) - (size_t)stackf_pop(&len_stack)] = '\0'; 
     graph_draw_get_function(input_buffer, GET_FUNCTION_UPDATE);
   }
+  // Case for exiting and drawing the input function.
   else if (key == KEY_GET) {
     smf_set_state(SMF_CTX(&fsm_obj), &states[DRAW]); 
   }
