@@ -11,6 +11,7 @@
 #include "function.h"
 #include "graph_display.h"
 #include "BTN.h"
+#include "stackf.h"
 
 #define FSM_DEBUG 0
 
@@ -126,68 +127,6 @@ static fsm_obj_t fsm_obj;
 * Primary Functions
 */
 int8_t fsm_init(void) { 
-  // FIXME TEMPORARY
-  //strcpy(infix[0], "3");
-  //strcpy(infix[1], "+");
-  //strcpy(infix[2], "4");
-  //strcpy(infix[3], "*");
-  //strcpy(infix[4], "2");
-  //strcpy(infix[5], "/");
-  //strcpy(infix[6], "(");
-  //strcpy(infix[7], "1");
-  //strcpy(infix[8], "-");
-  //strcpy(infix[9], "5");
-  //strcpy(infix[10], ")");
-  //strcpy(infix[11], "^");
-  //strcpy(infix[12], "2");
-  //strcpy(infix[13], "*");
-  //strcpy(infix[14], "sin");
-  //strcpy(infix[15], "(");
-  //strcpy(infix[16], "x");
-  //strcpy(infix[17], ")");
-  //infix[18][0] = '\0';
- 
-  strcpy(infix[0], "tan");
-  strcpy(infix[1], "(");
-  strcpy(infix[2], "x");
-  strcpy(infix[3], ")");
-  infix[4][0] = '\0';
-
-
-  function_infix_to_postfix(infix, postfix, MAX_FUNCTION_TOKENS);
-
-  for(int i = 0; i < MAX_FUNCTION_TOKENS && postfix[i][0] != '\0'; i++) {
-    printk("%s ", postfix[i]);  
-  }
-  printk("\n");
-
-  float x = X_MIN;
-  for (int16_t i = 0; i < FUNCTION_NUM_POINTS; i++) {
-    functions[0].x[i] = x;
-    functions[0].y[i] = function_evaluate_postfix(postfix, x);
-    x += X_INCREMENT;
-  }
-
-  strcpy(infix[0], "x");
-  strcpy(infix[1], "^");
-  strcpy(infix[2], "2");
-  infix[3][0] = '\0';
-
-  function_infix_to_postfix(infix, postfix, MAX_FUNCTION_TOKENS);
-
-  for(int i = 0; i < MAX_FUNCTION_TOKENS && postfix[i][0] != '\0'; i++) {
-    printk("%s ", postfix[i]);  
-  }
-  printk("\n");
-
-  x = X_MIN;
-  for (int16_t i = 0; i < FUNCTION_NUM_POINTS; i++) {
-    functions[1].x[i] = x;
-    functions[1].y[i] = function_evaluate_postfix(postfix, x);
-    x += X_INCREMENT;
-  }
-  // END
-
   smf_set_initial(SMF_CTX(&fsm_obj), &states[SETUP]);
   return 0;
 }
@@ -261,9 +200,6 @@ static void draw_entry(void *o) {
   display_clean();
 
   graph_draw_axes();
-  // FIXME No explicit active setting
-  functions[0].is_active = true;
-  functions[1].is_active = true;
   for (uint8_t i = 0; i < MAX_FUNCTIONS; i++) {
     if (functions[i].is_active) {
       graph_draw_function(&functions[i]);
@@ -327,12 +263,18 @@ static enum smf_state_result get_function_run(void *o) {
   }
 
   static bool prev_is_digit = true;
+  static size_t cur_len;
+  cur_len = 0;
+  STACKF_INIT(len_stack);
+
 
   if (key >= KEY_0 && key <= KEY_DOT) { 
     if (!prev_is_digit) {
       snprintk(input_buffer, MAX_FUNCTION_TOKENS * TOKEN_MAX_LENGTH,"%s%s", input_buffer, " ");
+      cur_len++;
     }
     snprintk(input_buffer, MAX_FUNCTION_TOKENS * TOKEN_MAX_LENGTH,"%s%s", input_buffer, key_map[key]);
+    cur_len += strlen(key_map[key]);
 
     prev_is_digit = true;
     graph_draw_get_function(input_buffer, GET_FUNCTION_UPDATE); 
@@ -340,11 +282,21 @@ static enum smf_state_result get_function_run(void *o) {
   else if (key != KEY_NONE && key != KEY_DEL && key != KEY_GET) {
     snprintk(input_buffer, MAX_FUNCTION_TOKENS * TOKEN_MAX_LENGTH,"%s%s", input_buffer, " ");
     snprintk(input_buffer, MAX_FUNCTION_TOKENS * TOKEN_MAX_LENGTH,"%s%s", input_buffer, key_map[key]);
+    cur_len += 1 + strlen(key_map[key]);
+
     prev_is_digit = false;
     graph_draw_get_function(input_buffer, GET_FUNCTION_UPDATE); 
   } 
+  else if (key == KEY_DEL && (int)stackf_peek(&len_stack) != 0) {
+    input_buffer[strlen(input_buffer) - (size_t)stackf_pop(&len_stack)] = '\0'; 
+    graph_draw_get_function(input_buffer, GET_FUNCTION_UPDATE);
+  }
   else if (key == KEY_GET) {
     smf_set_state(SMF_CTX(&fsm_obj), &states[DRAW]); 
+  }
+
+  if (cur_len > 0) {
+    stackf_push(&len_stack, cur_len);
   }
 
   display_timer_handler();
