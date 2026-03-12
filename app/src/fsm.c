@@ -39,7 +39,8 @@ enum key {
   KEY_MIN, KEY_MUL, KEY_DIV,
   KEY_X, KEY_PI, KEY_E,
   KEY_POW, KEY_LN, KEY_SQRT,
-  KEY_ABS, KEY_DEL, KEY_GET
+  KEY_ABS, KEY_DEL, KEY_GET,
+  KEY_NONE
 };
 static const char *key_map[] = {
   [KEY_0] = "0",
@@ -281,7 +282,7 @@ static enum smf_state_result draw_run(void *o) {
   }
 #endif
   //enum key test = get_key();
-  //if (test != 255) {
+  //if (test != KEY_NONE) {
   //  printk("%d\n", test);
   //}
   
@@ -336,7 +337,7 @@ static enum smf_state_result get_function_run(void *o) {
     prev_is_digit = true;
     graph_draw_get_function(input_buffer, GET_FUNCTION_UPDATE); 
   }
-  else if (key != 255 && key != KEY_DEL && key != KEY_GET) {
+  else if (key != KEY_NONE && key != KEY_DEL && key != KEY_GET) {
     snprintk(input_buffer, MAX_FUNCTION_TOKENS * TOKEN_MAX_LENGTH,"%s%s", input_buffer, " ");
     snprintk(input_buffer, MAX_FUNCTION_TOKENS * TOKEN_MAX_LENGTH,"%s%s", input_buffer, key_map[key]);
     prev_is_digit = false;
@@ -345,7 +346,6 @@ static enum smf_state_result get_function_run(void *o) {
   else if (key == KEY_GET) {
     smf_set_state(SMF_CTX(&fsm_obj), &states[DRAW]); 
   }
-
 
   display_timer_handler();
   return SMF_EVENT_HANDLED;
@@ -425,5 +425,5 @@ static enum key get_key() {
   }
   pressed = false;
 
-  return -1;
+  return KEY_NONE;
 }
