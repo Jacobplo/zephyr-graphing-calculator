@@ -16,6 +16,9 @@
 #define GET_PRECEDENCE(str) (__function_get_operator_attribute((str), OPERATOR_PRECEDENCE))
 #define GET_ASSOCIATIVITY(str) (__function_get_operator_attribute((str), OPERATOR_ASSOCIATIVITY))
 
+static TokenType __function_get_token_type(const char *token);
+static float __function_get_constant(const char *token);
+static int8_t __function_get_operator_attribute(const char *token, OperatorAttribute attribute);
 
 static const Token possible_tokens[] = {
   // Operators
@@ -45,6 +48,9 @@ static const Token possible_tokens[] = {
 
 
 
+/**
+ * Implements a shunting-yard algorithm for infix to postfix conversion
+ */
 int8_t function_infix_to_postfix(char (*infix)[TOKEN_MAX_LENGTH], char (*postfix)[TOKEN_MAX_LENGTH], size_t token_buffer_size) {
   OPERATOR_STACK_INIT(operator_stack);
   operator_stack.top = -1;  // Reset stack state because it is static.
@@ -215,7 +221,7 @@ float function_evaluate_postfix(char (*postfix)[TOKEN_MAX_LENGTH], float x_val) 
 }
 
 
-TokenType __function_get_token_type(const char *token) { 
+static TokenType __function_get_token_type(const char *token) { 
   // Compare token with the defined token types
   const Token *possible_token = possible_tokens;
   while(possible_token->token_type != TOKEN_NONE) { 
@@ -248,7 +254,7 @@ TokenType __function_get_token_type(const char *token) {
   return TOKEN_NONE;
 }
 
-float __function_get_constant(const char *token) {
+static float __function_get_constant(const char *token) {
   const Token *possible_token = possible_tokens;
   while(possible_tokens->token_type != TOKEN_NONE) {
     if(possible_token->token_type == TOKEN_CONSTANT && !strncmp(possible_token->constant.symbol, token, TOKEN_MAX_LENGTH - 1)) {
@@ -261,7 +267,7 @@ float __function_get_constant(const char *token) {
   return 0.0;
 }
 
-int8_t __function_get_operator_attribute(const char *token, OperatorAttribute attribute) {
+static int8_t __function_get_operator_attribute(const char *token, OperatorAttribute attribute) {
   const Token *possible_token = possible_tokens;
   while(possible_tokens->token_type != TOKEN_NONE) {
     if(possible_token->token_type == TOKEN_OPERATOR && !strncmp(possible_token->operator.symbol, token, TOKEN_MAX_LENGTH - 1)) {

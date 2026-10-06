@@ -19,7 +19,10 @@
 #define _M_PI 3.14159265358979323846
 #define _M_E  2.7182818284590452354
 
-
+/**
+ * Contains information about a function, including all its points in
+ * floating-point format, as well as the LVGL points to draw
+ */
 typedef struct Function {
   float x[FUNCTION_NUM_POINTS];
   float y[FUNCTION_NUM_POINTS];
@@ -28,7 +31,9 @@ typedef struct Function {
   bool is_active;
 } Function;
 
-
+/**
+ * Different types of tokens that arre recognized by the function parser
+ */
 typedef enum TokenType {
   TOKEN_NONE,
   TOKEN_OPERATOR,
@@ -39,23 +44,36 @@ typedef enum TokenType {
   TOKEN_X
 } TokenType;
 
+/**
+ * Operator attributes required for each operator when converting to postfix
+ * notation
+ */
 typedef enum OperatorAttribute {
   OPERATOR_PRECEDENCE,
   OPERATOR_ASSOCIATIVITY
 } OperatorAttribute;
 
 
+/**
+ * Describes a single operator in its required detail
+ */
 typedef struct Operator {
   char *symbol;
   int8_t precedence;
   char associativity;
 } Operator;
 
+/**
+ * Describes constant values (e.g. pi)
+ */
 typedef struct Constant {
   char *symbol;
   float value;
 } Constant;
 
+/**
+ * Describes a single token of an input infix string
+ */
 typedef struct Token {
   TokenType token_type;
   union {
@@ -65,14 +83,19 @@ typedef struct Token {
   };
 } Token;
 
-
+/**
+ * Performs a full infix to postfix function conversion, which must be ones
+ * before it can be evaluated for a given x input.
+ *
+ * Returns a negative integer on failure.
+ */
 int8_t function_infix_to_postfix(char (*infix)[TOKEN_MAX_LENGTH], char (*postfix)[TOKEN_MAX_LENGTH], size_t token_buffer_size);
+
+/**
+ * Evaluates a given postfix function for a given input x value. Evaluates y,
+ * and returns it.
+ */
 float function_evaluate_postfix(char (*postfix)[TOKEN_MAX_LENGTH], float x_val);
-TokenType __function_get_token_type(const char *token);
-float __function_get_constant(const char *token);
-int8_t __function_get_operator_attribute(const char *token, OperatorAttribute attribute);
-
-
 
 /*
 * Operator Stack Components

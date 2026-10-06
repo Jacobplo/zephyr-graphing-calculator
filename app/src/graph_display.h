@@ -44,12 +44,39 @@ enum get_function_state {
   GET_FUNCTION_UPDATE
 };
 
+/**
+ * Initializes the display shield.
+ *
+ * Returns a negative integer on failure.
+ */
 int8_t display_init(void);
+
+/**
+ * Cleans the screen, removing all objects drawn to it.
+ */
 void display_clean(void);
 
+/**
+ * Draw the cartesian planes axes to the screen.
+ */
 void graph_draw_axes(void);
+
+/**
+ * Draws a function to the screen by using a finite number of points, and
+ * connecting them with lines
+ */
 void graph_draw_function(Function *func);
+
+
+/**
+ * Draw the function input prompt, displaying the current input text
+ */
 void graph_draw_get_function(const char *text, enum get_function_state state);
+
+
+/**
+ * Draw a line that connects a given number of points
+ */
 void graph_draw_line(const lv_point_precise_t *points, size_t num_points, lv_style_t *style);
 
 static inline void display_timer_handler(void) {
