@@ -42,6 +42,9 @@ static const char *key_map[] = {
   [KEY_ABS] = "abs",
 };
 
+/**
+ * Physical keypad layout
+ */
 static uint8_t keys[NUM_ROWS][NUM_COLS] = {
   { KEY_7, KEY_8,   KEY_9,   KEY_DIV, KEY_POW, KEY_SIN, KEY_GET  },
   { KEY_4, KEY_5,   KEY_6,   KEY_MUL, KEY_LB , KEY_COS, KEY_DEL  },
@@ -49,6 +52,9 @@ static uint8_t keys[NUM_ROWS][NUM_COLS] = {
   { KEY_0, KEY_DOT, KEY_NEG, KEY_ADD, KEY_X  , KEY_LN , KEY_E    },
 };
 
+/**
+ * Makes a single row of the keypad active.
+ */
 static void keypad_select_row(uint8_t row_num);
 
 int keypad_init() {
@@ -84,10 +90,13 @@ enum key keypad_get_key() {
   static bool lifted = true;
   static bool pressed = false;
 
+  // Scan each row
   k_msleep(10);
   for(int8_t i = 0; i < NUM_ROWS; i++) {
     keypad_select_row(i);
     k_msleep(10);
+
+    // Check each key in the current row, returning a key if it is pressed.
     for(int8_t j = 0; j < NUM_COLS; j++) {
       if(gpio_pin_get_dt(&col[j])) {
         pressed = true;

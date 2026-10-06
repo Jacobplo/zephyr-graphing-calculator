@@ -24,10 +24,22 @@ enum key {
   KEY_NONE
 };
 
+/**
+ * Initializes the GPIO pins for the keypad.
+ *
+ * Returns a negative integer on failure.
+ */
 int keypad_init(void);
 
+/**
+ * Gets a single key that is currently pressed. If multiple keys are pressed,
+ * only one will be registered, which is determined by the scanning order.
+ */
 enum key keypad_get_key(void);
 
+/**
+ * Returns the string associated with a given key.
+ */
 const char *keypad_key_to_str(enum key key);
 
 #endif
